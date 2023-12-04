@@ -51,7 +51,7 @@ On the second virtual machine, we use the `scp` command to securely transfer the
 
     scp aleks@10.0.0.1:/home/aleks/vpn_simple/key.key /home/aleks/vpn_simple/key.key
 
-On the first virtual computer, we create a configuration file for the OpenVPN server, which will work via the TCP protocol and create a tunnel on the 3rd layer of the network, i.e. `tun` mode. In the configuration file, set the protocol through which the VPN will work `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the server and the client `ifconfig 10.35.1.1 10.35.1.2` and the encryption key `secret key.key`.
+On the first virtual computer, we create a configuration file for the OpenVPN server, which will work via the UDP protocol and create a tunnel on the 3rd layer of the network, i.e. `tun` mode. In the configuration file, set the protocol through which the VPN will work `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the server and the client `ifconfig 10.35.1.1 10.35.1.2` and the encryption key `secret key.key`.
 
     nano server_tun.conf
 
@@ -61,7 +61,7 @@ On the first virtual computer, we create a configuration file for the OpenVPN se
     secret key.key
     providers legacy default
 
-On another virtual computer, we create a configuration file for the OpenVPN client, which will work via the TCP protocol and a tunnel on the 3rd layer of the network, i.e. in `tun` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the client and server `ifconfig 10.35.1.2 10.35.1.1` and the encryption key `secret key.key`.
+On another virtual computer, we create a configuration file for the OpenVPN client, which will work via the UDP protocol and a tunnel on the 3rd layer of the network, i.e. in `tun` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the client and server `ifconfig 10.35.1.2 10.35.1.1` and the encryption key `secret key.key`.
 
     nano client_tun.conf
 
