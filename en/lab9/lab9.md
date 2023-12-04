@@ -59,6 +59,7 @@ On the first virtual computer, we create a configuration file for the OpenVPN se
     dev tun
     ifconfig 10.35.1.1 10.35.1.2
     secret key.key
+    providers legacy default
 
 On another virtual computer, we create a configuration file for the OpenVPN client, which will work via the TCP protocol and a tunnel on the 3rd layer of the network, i.e. in `tun` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the client and server `ifconfig 10.35.1.2 10.35.1.1` and the encryption key `secret key.key`.
 
@@ -69,6 +70,7 @@ On another virtual computer, we create a configuration file for the OpenVPN clie
     dev tun
     ifconfig 10.35.1.2 10.35.1.1
     secret key.key
+    providers legacy default
 
 First, we start the OpenVPN server on the first virtual computer.
 
@@ -89,6 +91,7 @@ Let's create an OpenVPN server that will work via the TCP protocol and create a 
     proto tcp-server
     dev tap
     secret key.key
+    providers legacy default
 
 On another virtual computer, create a configuration file for the OpenVPN client, which will work via the TCP protocol and a tunnel on the 2nd layer of the network, i.e. in `tap` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto tcp-client`, the layer on which the tunnel will be executed `dev tap` and the encryption key `secret key.key' `.
 
@@ -98,6 +101,7 @@ On another virtual computer, create a configuration file for the OpenVPN client,
     proto tcp-client
     dev tap
     secret key.key
+    providers legacy default
 
 First, we start the OpenVPN server on the first virtual computer. Since the tunnel is on the 2nd layer of the network, we still need to manually add the IP address to our server using the `ip` command.
 

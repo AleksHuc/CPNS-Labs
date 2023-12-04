@@ -2,7 +2,7 @@
 
 ## Navodila
 
-0. Uporabite omrežje in navidezne računalnike iz prejšnjih vaj. 
+0. Uporabite omrežje in navidezne računalnike iz prejšnjih vaj.
 1. Postavit Simple Network Management Protocol (SNMP) strežnik.
 2. Pridobite podatke s SNMP strežnika preko SNMPv1 protokola.
 3. Prejete podatke naredimo berljive.
@@ -49,7 +49,7 @@ Da se nastavitve upoštevajo, ponovno zaženemo `snmpd` SNMP strežnik in presku
 
     snmpwalk -v 1 -c community localhost
 
-V nastavitveni datoteki `/etc/snmp/snmpd.conf` tudi omejimo dostop do SNMP strežnika na podlagi IP naslovov odjemalcev. V našem primeru bomo omogočilo dostop z vseh IP naslovov. 
+V nastavitveni datoteki `/etc/snmp/snmpd.conf` tudi omejimo dostop do SNMP strežnika na podlagi IP naslovov odjemalcev. V našem primeru bomo omogočilo dostop z vseh IP naslovov.
 
     nano /etc/snmp/snmpd.conf
 
