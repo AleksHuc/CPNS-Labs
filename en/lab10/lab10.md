@@ -180,9 +180,9 @@ We continue with the certification agency, which already has all the certificate
     dev tun
     remote SERVER_IP
 
-    ca client/pki/ca.crt
-    cert client/pki/issued/caclient.crt
-    key client/pki/private/caclient.key
+    ca ca/pki/ca.crt
+    cert ca/pki/issued/caclient.crt
+    key ca/pki/private/caclient.key
     
 Now let's run the OpenVPN client and test the operation.
 
