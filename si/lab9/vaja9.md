@@ -51,7 +51,7 @@ Na drugem navideznem računalniku uporabimo ukaz `scp`, da varno prenesemo klju�
 
     scp aleks@10.0.0.1:/home/aleks/vpn_simple/key.key /home/aleks/vpn_simple/key.key
 
-Na prvem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN strežnik, ki bo deloval preko protokola TCP in ustvaril tunel na 3. plasti omrežja, torej način `tun`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto tcp-server`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov strežnika in klienta `ifconfig 10.35.1.1 10.35.1.2` ter ključ za šifriranje `secret key.key`.
+Na prvem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN strežnik, ki bo deloval preko protokola UDP in ustvaril tunel na 3. plasti omrežja, torej način `tun`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto udp`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov strežnika in klienta `ifconfig 10.35.1.1 10.35.1.2` ter ključ za šifriranje `secret key.key`.
 
     nano server_tun.conf
 
@@ -59,8 +59,9 @@ Na prvem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN stre
     dev tun
     ifconfig 10.35.1.1 10.35.1.2
     secret key.key
+    providers legacy default
 
-Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola TCP in tunela na 3. plasti omrežja, torej v načinu `tun`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto tcp-client`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov klienta in strežnika `ifconfig 10.35.1.2 10.35.1.1` ter ključ za šifriranje `secret key.key`.
+Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola UDP in tunela na 3. plasti omrežja, torej v načinu `tun`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto udp`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov klienta in strežnika `ifconfig 10.35.1.2 10.35.1.1` ter ključ za šifriranje `secret key.key`.
 
     nano client_tun.conf
 
@@ -69,6 +70,7 @@ Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN kli
     dev tun
     ifconfig 10.35.1.2 10.35.1.1
     secret key.key
+    providers legacy default
     
 Najprej poženemo OpenVPN strežnik an prvem navideznem računalniku.
 
@@ -89,6 +91,7 @@ Ustvarimo OpenVPN strežnik, ki bo deloval preko protokola TCP in ustvaril tunel
     proto tcp-server
     dev tap
     secret key.key
+    providers legacy default
 
 Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola TCP in tunela na 2. plasti omrežja, torej v načinu `tap`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto tcp-client`, plast na kateri se bo izvedel tunel `dev tap` ter ključ za šifriranje `secret key.key`.
 
@@ -98,6 +101,7 @@ Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN kli
     proto tcp-client
     dev tap
     secret key.key
+    providers legacy default
 
 Najprej poženemo OpenVPN strežnik an prvem navideznem računalniku. Ker je tunel na 2. plasti omrežja, moramo še ročno dodati IP naslov našemu strežniku z ukazom `ip`.
 

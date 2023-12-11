@@ -85,11 +85,7 @@ The main drawback of `SNMPv1` is that it does not support user authentication an
 
     systemctl stop snmpd.service
 
-    mkdir /snmp
-
     net-snmp-create-v3-user -ro -a SHA -A kpovkaboom -x AES -X kpovkaboom testuser
-
-    cp /snmp/snmpd.conf /usr/share/snmp/snmpd.conf
 
 We check in the configuration files `/var/lib/snmp/snmpd.conf` and `/usr/share/snmp/snmpd.conf` if the user has been created correctly and then restart the SNMP server and test the operation with the command `snmpwalk`.
 
@@ -97,7 +93,7 @@ We check in the configuration files `/var/lib/snmp/snmpd.conf` and `/usr/share/s
 
     createUser testuser SHA "kpovkaboom" AES "kpovkaboom"
 
-    nano /usr/share/snmp/snmpd.conf
+    nano /etc/snmp/snmpd.conf
 
     rouser testuser
 
@@ -135,7 +131,7 @@ The web application is accessed via a browser.
 
 Log in to the web application with the username `admin` and the password we chose during installation.
 
-To receive SNMP data, we need to add our server by selecting `Create\New Device` under the menu on the left and filling out the form to add a new device. For example, for `Description` we choose `SNMP Server`, for IP address `Hostname` we choose the IP address of our SNMP server `10.0.0.1`, for the version of SNMP protocol `SNMP Version` we choose version `Version 3`, for security level `SNMP Security Level` select `authPriv`, `SNMP Username (v3)` select the user we created earlier `testuser`, `SNMP Auth Protocol` select `SHA` and enter the authentication password under `SNMP Password (v3)`, for the encryption protocol `SNMP Privacy Protocol (v3)` select `AES` and enter the encryption key under `SNMP Privacy Passphrase` and leave all other settings at their default values. Confirm the form by pressing the `Create` button at the bottom right.
+To receive SNMP data, we need to add our server by selecting `Create\New Device` under the menu on the left and filling out the form to add a new device. For example, for `Description` we choose `SNMP Server`, for IP address `Hostname` we choose the IP address of our SNMP server `10.0.0.1`, for the version of SNMP protocol `SNMP Version` we choose version `Version 3`, for security level `SNMP Security Level` select `authPriv`, `SNMP Username (v3)` select the user we created earlier `testuser`, `SNMP Auth Protocol` select `SHA` and enter the authentication password under `SNMP Password (v3)`, for the encryption protocol `SNMP Privacy Protocol (v3)` select `AES-128` and enter the encryption key under `SNMP Privacy Passphrase` and leave all other settings at their default values. Confirm the form by pressing the `Create` button at the bottom right.
 
 ![Setting up the SNMP server for data access.](images/lab6-cacti5.png)
 
