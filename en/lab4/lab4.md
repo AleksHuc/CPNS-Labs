@@ -222,9 +222,10 @@ Download the missing files from the `isolinux` folder on the attached installati
     cp /mnt/isolinux/libutil.c32 .
     cp /mnt/isolinux/vesamenu.c32 .
     cp /mnt/isolinux/libcom32.c32 .
-    cp /mnt/isolinux/splash.png . 
+    cp /mnt/isolinux/splash.png .
+	cp /mnt/isolinux/live.cfg .
 
-We still lack the bootloader configuration file, for which we can use the `isolinux.cfg` file from the installation image. The `pxelinux` system loader can offer several configuration files at the same time, which are stored in the `pxelinux.cfg` folder, which we create and transfer the `isolinux.cfg` file to and rename it to `default`.
+We still lack the system loader configuration file, for which we can use the `isolinux.cfg` and `live.cfg` files from the installation image. The `pxelinux` system loader can offer several configuration files at the same time, which are stored in the `pxelinux.cfg` folder and we transfer `isolinux.cfg` to it and rename it to `default`.
 
     mkdir pxelinux.cfg
     cp /mnt/isolinux/isolinux.cfg ./pxelinux.cfg/default
