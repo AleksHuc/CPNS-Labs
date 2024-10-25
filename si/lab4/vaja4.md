@@ -223,7 +223,7 @@ Manjkajoče datoteke prenesemo iz mape `isolinux` na priključeni namestitveni s
     cp /mnt/isolinux/vesamenu.c32 .
     cp /mnt/isolinux/libcom32.c32 .
     cp /mnt/isolinux/splash.png .
-	cp /mnt/isolinux/live.cfg 
+	cp /mnt/isolinux/live.cfg .
 
 Manjka nam še nastavitvena datoteka sistemskega nalagalnika, za katero lahko uporabimo datoteki `isolinux.cfg` in `live.cfg` z namestitvene slike. Sistemski nalagalnik `pxelinux` lahko hkrati ponudi tudi več nastavitvenih datotek, ki so shranjene v mapi `pxelinux.cfg` in vanjo prenesemo `isolinux.cfg` ter jo preimenujemo v `default`.
 
