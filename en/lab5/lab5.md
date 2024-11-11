@@ -29,19 +29,28 @@ The kernel and initial virtual disk are also obtained from the installation imag
 
 Let's check the contents of the bootloader configuration file.
 
-    nano pxelinux.cfg/default
+	nano pxelinux.cfg/default
+
+	default vesamenu.c32
+	include live.cfg
+
+We can see that the `default` file does not contain direct settings but imports them from the `live.cfg` file. Therefore, we open it and look at the definition of the first line of the menu for bootinh the operating system named `Start Linux Mint`.
+
+	nano live.cfg
 
     label live
-      menu label Start Linux Mint
-      kernel /casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed boot=casper initrd=/casper/initrd.lz quiet splash --
+        menu label Start Linux Mint
+        menu default
+        kernel /casper/vmlinuz
+        append boot=casper initrd=/casper/initrd.lz username=mint hostname=mint quiet splash --
 
 We can see that the paths to the kernel and the initial virtual disk are absolute and we need to change them to relative (without / in front). We also remove the `quiet splash --` flags to allow the logs to be printed during booting.
 
     label live
-      menu label Start Linux Mint
-      kernel casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed boot=casper initrd=casper/initrd.lz
+        menu label Start Linux Mint
+        menu default
+        kernel casper/vmlinuz
+        append boot=casper initrd=casper/initrd.lz username=mint hostname=mint
 
 ### 3. Task
 
@@ -77,11 +86,12 @@ Let's test the operation of the NFS server locally by trying to connect the netw
 
 ### 4. Task
 
-Now we have to enable access to the file system of the operating system via the NFS protocol in the configuration file of the bootloader `pxelinux.cfg/default`. By setting the network boot protocol to NFS `netboot=nfs`, the root of the file system to the folder provided by the NFS server `nfsroot=10.0.0.1:/media/cdrom` and adding the automatic acquisition of the IP address when the operating system is booting ` ip=dhcp`.
+Now we have to enable access to the file system of the operating system via the NFS protocol in the configuration file of the bootloader `live.cfg`. By setting the network boot protocol to NFS `netboot=nfs`, the root of the file system to the folder provided by the NFS server `nfsroot=10.0.0.1:/media/cdrom` and adding the automatic acquisition of the IP address when the operating system is booting ` ip=dhcp`.
 
-    nano pxelinux.cfg/default
+    nano live.cfg
 
-    label live
-      menu label Start Linux Mint
-      kernel casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed netboot=nfs nfsroot=10.0.0.1:/media/cdrom initrd=casper/initrd.lz ip=dhcp
+	label live
+        menu label Start Linux Mint
+        menu default
+        kernel casper/vmlinuz
+        append boot=casper initrd=casper/initrd.lz username=mint hostname=mint netboot=nfs nfsroot=10.0.0.1:/media/cdrom ip=dhcp

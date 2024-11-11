@@ -12,14 +12,16 @@
 
 Zagon Linux operacijskega sistema ima naslednje korake:
 
-1. Ob pritisku na gumb za zagon računalnika procesor začne z izvajanjem kode na v naprej določenem naslovu, na primer na 0xFFFF0 pri prvih Intel procesorjih.
-2. Izvajati začne ukaze shranjene v [Basic Input Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS) sistemu, ki se nahaja na ločenem pomnilniku na matični plošči, ki zazna in upravlja s strojno opremo ter preda izvajanje sistemskemu nalagalniku. Izvede se [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self-test) proces, ki zazna ter preveri strojno opremo, na primer procesor, pomnilnik, grafična kartica, trdi diski ter ostale vhodno/izhodno naprave.
-3. Nato se izvedejo še BIOS razširitve (BIOS Extensions), ki omogočajo izvedbo ukazov shranjenih v BIOS pomnilnikih razširitvenih kartic za njihov zagon, na primer mrežne kartice, diskovni krmilniki, grafični pospeševalniki in ostale naprave.
-4. BIOS prebere prvih 512B na izbranem nosilcu in jih zažene, omenjenemu programu nudi tudi možnost za dostop do nadaljnjih podatkov na napravi. Teh prvih 512B na nosilcu imenujemo [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record), ki v prvih 446B vsebuje sistemski nalagalnik, nato v naslednjih 64B tabelo razdelkov in v zadnjih 2B še podpis. MBR se lahko nahaja na trdem disku, USB prenosnem pomnilniku, CD ali DVD nosilcu.
-6. [Sistemski nalagalnik (Bootloader)](https://en.wikipedia.org/wiki/Bootloader) v MBR poskrbi za zagon operacijskega sistema. Ker sistemski nalagalnik za sodobni operacijski sistem potrebuje več prostora kot 446B, ga razdelimo v dva dela. 1. stopnja sistemskega nalagalnika se nahaja v MBR in poskrbi za zagon 2. stopnje sistemskega nalagalnika, ki se nahaja v eni od razdelkov na podatkovnem nosilcu.
-7. Sistemski nalagalnik na 2. stopnji poskrbi za zagon operacijskega sistema, tako da požene [jedro (kernel)](https://en.wikipedia.org/wiki/Linux_kernel) z dodatnimi parametri ter [začetni navidezni disk (initial RAM disk - initrd or initramfs)](https://en.wikipedia.org/wiki/Initial_ramdisk) z začasnim datotečnim izhodiščnim datotečnim sistemom.
-8. Nato se zažene [prvi program (init)](https://en.wikipedia.org/wiki/Init) na operacijskem sistemu po poskrbi za zagon in dobi procesorsko oznako 1.
-9. Sedaj sledi zagon uporabniških programov, grafičnega okolja in drugih programov.
+1. Ob pritisku na gumb za zagon računalnika procesor začne z izvajanjem kode na v naprej določenem naslovu, na primer na `0xFFFFFFF0` pri 32-bitnih in 64-bitnih x86 procesorjih.
+2. Izvajati začne ukaze shranjene v [Basic Input Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS) sistemu, ki se nahaja na ločenem pomnilniku ([Read Only Memory - ROM](https://en.wikipedia.org/wiki/Read-only_memory)) na matični plošči, ki zazna in upravlja s strojno opremo ter preda izvajanje sistemskemu nalagalniku. Izvede se [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self-test) proces, ki zazna ter preveri strojno opremo, na primer procesor, pomnilnik, grafična kartica, trdi diski ter ostale vhodno/izhodno naprave in jih zažene.
+3. Nato se izvedejo še [BIOS razširitve (BIOS Extensions)](https://en.wikipedia.org/wiki/BIOS#Extensions_(option_ROMs)), ki omogočajo izvedbo ukazov shranjenih v BIOS pomnilnikih razširitvenih kartic za njihov zagon, na primer mrežne kartice, diskovni krmilniki, grafični pospeševalniki in ostale naprave.
+4. BIOS prebere prvih 512B na izbranem podatkovnemu nosilcu, ki je na voljo, in jih zažene, omenjenemu programu nudi tudi možnost za dostop do nadaljnjih podatkov na napravi. Teh prvih 512B na nosilcu imenujemo [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record), ki v prvih 446B vsebuje sistemski nalagalnik, nato v naslednjih 64B tabelo razdelkov in v zadnjih 2B še podpis. MBR se lahko nahaja na trdem disku, USB prenosnem pomnilniku, CD ali DVD nosilcu.
+5. [Sistemski nalagalnik (Bootloader)](https://en.wikipedia.org/wiki/Bootloader) v MBR poskrbi za zagon operacijskega sistema. Ker sistemski nalagalnik za sodobni operacijski sistem potrebuje več prostora kot 446B, ga razdelimo v dva dela. 1. stopnja sistemskega nalagalnika se nahaja v MBR in poskrbi za zagon 2. stopnje sistemskega nalagalnika, ki se nahaja v eni od razdelkov na podatkovnem nosilcu.
+6. Sistemski nalagalnik na 2. stopnji poskrbi za zagon operacijskega sistema, tako da požene [jedro (kernel)](https://en.wikipedia.org/wiki/Linux_kernel) z dodatnimi parametri ter [začetni navidezni disk (initial RAM disk - initrd or initramfs)](https://en.wikipedia.org/wiki/Initial_ramdisk) z začasnim datotečnim izhodiščnim datotečnim sistemom.
+7. Nato se zažene [prvi program (init)](https://en.wikipedia.org/wiki/Init) na operacijskem sistemu po poskrbi za zagon in dobi procesorsko oznako 1.
+8. Sedaj sledi zagon uporabniških programov, grafičnega okolja in drugih programov.
+
+Moderni sistemi uporabljajo [Unified Extensible Firmware Interface (UEFI)](https://en.wikipedia.org/wiki/UEFI) namesto BIOS-a. Sam postopek zagona operacijskega sistema poteka podobno, le da UEFI uporablja EFI razdelek poljubne velikosti za hranjenje sistemskega nalagalnika in tabele razdelkov tipa [GUID Partition Table (GPT)](https://en.wikipedia.org/wiki/GUID_Partition_Table) ter tako odpravlja pomanjkljivosti pristopa MBR.
 
 Pogosti sistemski nalagalniki:
 
@@ -120,21 +122,7 @@ Da se nastavitve upoštevajo, ponovno zaženemo `isc-dhcp-server` DHCP strežnik
 
 ### 2. Naloga
 
-Namestimo TFTP strežnik, na primer `tftpd`.
-
-    apt install tftpd
-
-Nameščeni `tftpd` strežnik že deluje s privzetimi nastavitvami, ki so podane v nastavitveni datoteki `/etc/inetd.conf`.
-
-    nano /etc/inetd.conf
-
-    tftp dgram udp wait nobody /usr/sbin/tcpd /usr/sbin/in.tftpd /srv/tftp
-
-Ustvarimo mapo `/srv/tftp`, katero bo TFTP ponudil preko omrežja.
-
-    mkdir /srv/tftp
-
-V primeru, da z upravljalcem paketov ne najdete paketa `tftpd` potem namestite paket `tftpd-hpa` in v nastavitveni datoteki `/etc/default/tftpd-hpa` omogočite beleženje z zastavico `-v` in dostopnost novo dodanih datotek v mapi `/srv/tftp` z zastavico `-c`.
+Namestimo TFTP strežnik, na primer `tftpd-hpa` in v nastavitveni datoteki `/etc/default/tftpd-hpa` omogočimo beleženje z zastavico `-v` in dostopnost novo dodanih datotek v mapi `/srv/tftp` z zastavico `-c`.
 
     apt install tftpd-hpa
 
@@ -165,33 +153,7 @@ Drugi navidezni računalnik sedaj poženemo in ta požene PXE okolje za zagon pr
 
 ![Zagon navideznega računalnika v PXE okolje za omrežni zagon.](slike/vaja4-vbox2.png)
 
-Komunikaciji med strežnikom in klientom lahko sledimo tudi z beležkami v `/var/log/syslog`, ki se samodejno posodabljajo. Najprej vidimo pridobivanje IP naslova preko DHCP strežnika, nato preko protokola TFTP prenos sistemskega nalagalnika `pxelinux.0` in nato iskanje datoteke `ldlinux.c32` na različnih mestih v datotečnem sistemu. Ker datoteke `ldlinux.c32` ni, se postopek omrežnega zagona sistema neuspešno zaključi.  
-
-    tail -f /var/log/syslog
-
-    Nov  3 15:27:06 debian dhcpd[679]: DHCPDISCOVER from 08:00:27:4f:53:22 via enp0s8
-    Nov  3 15:27:07 debian dhcpd[679]: DHCPOFFER on 10.0.0.100 to 08:00:27:4f:53:22 via enp0s8
-    Nov  3 15:27:09 debian dhcpd[679]: reuse_lease: lease age 82 (secs) under 25% threshold, reply with unaltered, existing lease for 10.0.0.100
-    Nov  3 15:27:09 debian dhcpd[679]: DHCPREQUEST for 10.0.0.100 (10.0.0.1) from 08:00:27:4f:53:22 via enp0s8
-    Nov  3 15:27:09 debian dhcpd[679]: DHCPACK on 10.0.0.100 to 08:00:27:4f:53:22 via enp0s8
-    Nov  3 15:27:09 debian in.tftpd[3304]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3305]: tftpd: trying to get file: pxelinux.0
-    Nov  3 15:27:09 debian tftpd[3305]: tftpd: serving file from /srv/tftp
-    Nov  3 15:27:09 debian in.tftpd[3306]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3307]: tftpd: trying to get file: ldlinux.c32
-    Nov  3 15:27:09 debian tftpd[3307]: tftpd: serving file from /srv/tftp
-    Nov  3 15:27:09 debian in.tftpd[3308]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3309]: tftpd: trying to get file: /boot/isolinux/ldlinux.c32
-    Nov  3 15:27:09 debian in.tftpd[3310]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3311]: tftpd: trying to get file: /isolinux/ldlinux.c32
-    Nov  3 15:27:09 debian in.tftpd[3312]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3313]: tftpd: trying to get file: /boot/syslinux/ldlinux.c32
-    Nov  3 15:27:09 debian in.tftpd[3314]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3315]: tftpd: trying to get file: /syslinux/ldlinux.c32
-    Nov  3 15:27:09 debian in.tftpd[3316]: connect from 10.0.0.100 (10.0.0.100)
-    Nov  3 15:27:09 debian tftpd[3317]: tftpd: trying to get file: /ldlinux.c32
-
-V novejših različicah operacijskega sistema Linux se pa beležke beležijo v beležkah programa `systemd`, do katerih dostopamo preko ukaza `journalctl`. Zastavica `-u` nam nastavi spremljanje beležk le določenega programa, ter zastavica `-f` nam omogoča samodejno prikazovanje novih zapisov.
+Komunikaciji med strežnikom in klientom lahko sledimo tudi z beležkami v `systemd`, do katerih dostopamo preko ukaza `journalctl`. Zastavica `-u` nam nastavi spremljanje beležk le določenega programa, ter zastavica `-f` nam omogoča samodejno prikazovanje novih zapisov. Najprej vidimo pridobivanje IP naslova preko DHCP strežnika, nato preko protokola TFTP prenos sistemskega nalagalnika `pxelinux.0` in nato iskanje datoteke `ldlinux.c32` na različnih mestih v datotečnem sistemu. Ker datoteke `ldlinux.c32` ni, se postopek omrežnega zagona sistema neuspešno zaključi.  
 
     journalctl -u tftpd-hpa.service -f
 

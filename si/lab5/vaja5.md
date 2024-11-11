@@ -31,17 +31,26 @@ Preverimo vsebino nastavitvene datoteke sistemskega nalagalnika.
 
     nano pxelinux.cfg/default
 
+	default vesamenu.c32
+	include live.cfg
+
+Vidimo, da datoteka `default` ne vsebuje neposrednih nastavitev vendar jih uvozi iz datoteke `live.cfg`. Zato jo odpremo in pogledamo definicijo prve vrstice menija za zagon operacijskega sistema z imenom `Start Linux Mint`.
+
+	nano live.cfg
+
     label live
-      menu label Start Linux Mint
-      kernel /casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed boot=casper initrd=/casper/initrd.lz quiet splash --
+        menu label Start Linux Mint
+        menu default
+        kernel /casper/vmlinuz
+        append boot=casper initrd=/casper/initrd.lz username=mint hostname=mint quiet splash --
 
 Vidimo, da so poti do jedra in začetnega navideznega diska absolutne in jih moramo spremeniti v relativne (brez / spredaj). Prav tako odstranimo `quiet splash --` zastavice, da omogočimo izpis beležk med zagonom.
 
     label live
-      menu label Start Linux Mint
-      kernel casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed boot=casper initrd=casper/initrd.lz
+        menu label Start Linux Mint
+        menu default
+        kernel casper/vmlinuz
+        append boot=casper initrd=casper/initrd.lz username=mint hostname=mint
 
 ### 3. Naloga
 
@@ -77,12 +86,13 @@ Delovanje NFS strežnika preskusimo lokalno tako, da sedaj poskusimo priklop omr
 
 ### 4. Naloga
 
-Sedaj moramo še v nastavitveni datoteki sistemskega nalagalnika `pxelinux.cfg/default`omogočiti dostop do datotečnega sistem operacijskega sistema preko protokola NFS. Tako da nastavimo protokol za omrežni zagon na NFS `netboot=nfs`, izhodišče datotečnega sistema na mapo, ki jo ponuja NFS strežnik `nfsroot=10.0.0.1:/media/cdrom` ter dodamo še avtomatsko pridobivanje IP naslova ob zagonu operacijskega sistema `ip=dhcp`.
+Sedaj moramo še v nastavitveni datoteki sistemskega nalagalnika `live.cfg` omogočiti dostop do datotečnega sistem operacijskega sistema preko protokola NFS. Tako da nastavimo protokol za omrežni zagon na NFS `netboot=nfs`, izhodišče datotečnega sistema na mapo, ki jo ponuja NFS strežnik `nfsroot=10.0.0.1:/media/cdrom` ter dodamo še avtomatsko pridobivanje IP naslova ob zagonu operacijskega sistema `ip=dhcp`.
 
-    nano pxelinux.cfg/default
+    nano live.cfg
 
-    label live
-      menu label Start Linux Mint
-      kernel casper/vmlinuz
-      append  file=/cdrom/preseed/linuxmint.seed netboot=nfs nfsroot=10.0.0.1:/media/cdrom initrd=casper/initrd.lz ip=dhcp
+	label live
+        menu label Start Linux Mint
+        menu default
+        kernel casper/vmlinuz
+        append boot=casper initrd=casper/initrd.lz username=mint hostname=mint netboot=nfs nfsroot=10.0.0.1:/media/cdrom ip=dhcp
 
