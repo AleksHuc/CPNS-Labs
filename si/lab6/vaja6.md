@@ -13,11 +13,12 @@
 
 [Simple Network Management Protocol (SNMP)](https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol) je standardni protokol z izmenjevanje podatkov preko omrežja o stanju računalnikov in omrežja.
 
-SNMP uporablja za prenos podatkov format [Type Length Value (TLV)](https://en.wikipedia.org/wiki/Type-length-value).
+SNMP uporablja za prenos podatkov format [Type Length Value (TLV)](https://en.wikipedia.org/wiki/Type-length-value) oziroma bolj specifično [ASN.1 BER kodiranje](https://en.wikipedia.org/wiki/X.690#BER_encoding).
 
 Za upravljanje s SNMP podatki uporabljamo podatkovno zbirko [Management Information Base (MIB)](https://en.wikipedia.org/wiki/Management_information_base).
 
 Pogosto uporabljane spletne aplikacije za zbiranje SNMP podatkov:
+
 - [ICINGA](https://icinga.com/)
 - [Nagios](https://www.nagios.org/)
 - [Zabbix](https://www.zabbix.com/)
@@ -67,8 +68,8 @@ Podatki se izpišejo v formatu TLV in vidimo, da ima vsak podatek svoj hierarhi�
 
     nano /etc/apt/sources.list
 
-    deb http://deb.debian.org/debian/ bullseye main non-free contrib
-    deb-src http://deb.debian.org/debian/ bullseye main non-free contrib
+    deb http://deb.debian.org/debian/ bookworm main non-free-firmware non-free contrib
+    deb-src http://deb.debian.org/debian/ bookworm main non-free contrib
 
     apt update
     apt install snmp-mibs-downloader
@@ -79,7 +80,7 @@ Preskusimo delovanje zbirke MIB z ukazom `snmpwalk`.
 
 ### 4. Naloga
 
-Glavna pomanjkljivost protokola verzije `SNMPv1` je, da ne podpira overjanja (angl. authentication) uporabnikov in ne šifrira (angl. encryption) poslanih podatkov. Verzija `SNMPv3` odpravi ti dve pomanjkljivosti in vsebuje tudi kopico drugih izboljšav. Za dostop do podatkov sedaj potrebujemo ustvariti uporabnika in zato uporabite že v naprej pripravljen program. Uporabniku, na primer omogočimo samo branje podatkov, način overjanja in geslo za overjanje ter način šifriranja in ključ za šifriranje.
+Glavna pomanjkljivost protokola verzije `SNMPv1` je, da ne podpira overjanja (angl. authentication) uporabnikov in ne šifrira (angl. encryption) poslanih podatkov. Verzija `SNMPv3` odpravi ti dve pomanjkljivosti in vsebuje tudi kopico drugih izboljšav. Za dostop do podatkov sedaj potrebujemo ustvariti uporabnika in zato uporabite že v naprej pripravljen program. Ustvarimo dva uporabnika ter jima na primer omogočimo samo branje podatkov, način overjanja in geslo za overjanje ter način šifriranja in ključ za šifriranje.
 
     apt install libsnmp-dev
 
@@ -87,23 +88,40 @@ Glavna pomanjkljivost protokola verzije `SNMPv1` je, da ne podpira overjanja (an
 
     net-snmp-create-v3-user -ro -a SHA -A kpovkaboom -x AES -X kpovkaboom testuser
 
+	adding the following line to /var/lib/snmp/snmpd.conf:
+	   createUser testuser SHA "kpovkaboom" AES "kpovkaboom"
+	adding the following line to /etc/snmp/snmpd.conf:
+	   rouser testuser
+
+	net-snmp-create-v3-user -ro -a SHA -A kpovkaboom -x AES -X kpovkaboom kpovuser
+
+	adding the following line to /var/lib/snmp/snmpd.conf:
+	   createUser kpovuser SHA "kpovkaboom" AES "kpovkaboom"
+	adding the following line to /etc/snmp/snmpd.conf:
+	   rouser kpovuser
+
 Preverimo v nastavitvenih datotekah `/var/lib/snmp/snmpd.conf` in `/usr/share/snmp/snmpd.conf`, če se je uporabnik pravilno ustvaril in nato ponovno zaženemo SNMP strežnik ter preskusimo delovanje z ukazom `snmpwalk`.
 
     nano /var/lib/snmp/snmpd.conf
 
     createUser testuser SHA "kpovkaboom" AES "kpovkaboom"
+	createUser kpovuser SHA "kpovkaboom" AES "kpovkaboom"
 
     nano /etc/snmp/snmpd.conf
 
     rouser testuser
+	rouser kpovuser
 
     systemctl restart snmpd.service
 
     nano /var/lib/snmp/snmpd.conf
 
-    usmUser 1 3 0x80001f888082f37f51ace86c6300000000 "testuser" "testuser" NULL .1.3.6.1.6.3.10.1.1.3 0xeadfd1e83a80f141853375b1c4d7660b2be4d297 .1.3.6.1.6.3.10.1.2.4 0xeadfd1e83a80f141853375b1c4d7660b 0x
+    usmUser 1 3 0x80001f8880eae8572fe92f376700000000 "kpovuser" "kpovuser" NULL .1.3.6.1.6.3.10.1.1.3 0x0ba65e9f4aae705647dafac724a659e5ed59e5ed594b9f .1.3.6.1.6.3.10.1.2.4 0x0ba65e9f4aae705647dafac724a659e5 ""
+	usmUser 1 3 0x80001f8880eae8572fe92f376700000000 "testuser" "testuser" NULL .1.3.6.1.6.3.10.1.1.3 0x0ba65e9f4aae705647dafac724a659e5ed59e5ed594b9f .1.3.6.1.6.3.10.1.2.4 0x0ba65e9f4aae705647dafac724a659e5 ""
 
     snmpwalk -v 3 -m all -a SHA -A kpovkaboom -x AES -X kpovkaboom -l authPriv -u testuser 10.0.0.1
+
+Če pogledamo tajnopisa gesel obeh uporabnikov, vidimo, da sta enaka. Tajnopisa gesel sta ustvarjena brez uporabe soli in zato sta podvržena [napadu z mavričnimi tabelami](https://en.wikipedia.org/wiki/Rainbow_table).
 
 ### 5. Naloga
 
@@ -143,25 +161,21 @@ Do podatkov sedaj dostopamo preko zavihkov zgoraj levo, na primer do grafov `Gra
 
     apt install net-tools
 
-    netstat -plnt
+    netstat -putln
 
     Active Internet connections (only servers)
-    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
-    tcp        0      0 0.0.0.0:57161           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      767/mariadbd        
-    tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/init              
-    tcp        0      0 0.0.0.0:41681           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      618/cupsd           
-    tcp        0      0 0.0.0.0:35931           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 0.0.0.0:33949           0.0.0.0:*               LISTEN      -                   
-    tcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   
-    tcp6       0      0 :::54603                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::47405                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::111                  :::*                    LISTEN      1/init              
-    tcp6       0      0 :::80                   :::*                    LISTEN      957/apache2         
-    tcp6       0      0 :::60819                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::46549                :::*                    LISTEN      -                   
-    tcp6       0      0 ::1:631                 :::*                    LISTEN      618/cupsd           
-    tcp6       0      0 :::2049                 :::*                    LISTEN      - 
-
-
+	Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+	tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      835/cupsd           
+	tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      891/lighttpd        
+	tcp6       0      0 ::1:631                 :::*                    LISTEN      835/cupsd           
+	tcp6       0      0 :::80                   :::*                    LISTEN      891/lighttpd        
+	udp        0      0 0.0.0.0:5353            0.0.0.0:*                           576/avahi-daemon: r 
+	udp        0      0 0.0.0.0:67              0.0.0.0:*                           873/dhcpd           
+	udp        0      0 0.0.0.0:68              0.0.0.0:*                           566/dhclient        
+	udp        0      0 0.0.0.0:69              0.0.0.0:*                           869/in.tftpd        
+	udp        0      0 0.0.0.0:161             0.0.0.0:*                           839/snmpd           
+	udp        0      0 0.0.0.0:60251           0.0.0.0:*                           576/avahi-daemon: r 
+	udp6       0      0 :::5353                 :::*                                576/avahi-daemon: r 
+	udp6       0      0 :::69                   :::*                                869/in.tftpd        
+	udp6       0      0 ::1:161                 :::*                                839/snmpd           
+	udp6       0      0 :::54171                :::*                                576/avahi-daemon: r 

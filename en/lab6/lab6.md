@@ -13,11 +13,12 @@
 
 [Simple Network Management Protocol (SNMP)](https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol) is a standard protocol for exchanging data over a network about the state of computers and the network.
 
-SNMP uses the [Type Length Value (TLV)](https://en.wikipedia.org/wiki/Type-length-value) format for transmitting data.
+SNMP uses the [Type Length Value (TLV)](https://en.wikipedia.org/wiki/Type-length-value) format for transmitting data, more specifically [ASN.1 BER encoding](https://en.wikipedia.org/wiki/X.690#BER_encoding).
 
 To manage SNMP data, we use the [Management Information Base (MIB)](https://en.wikipedia.org/wiki/Management_information_base) database.
 
 Commonly used web applications for collecting SNMP data:
+
 - [ICINGA](https://icinga.com/)
 - [Nagios](https://www.nagios.org/)
 - [Zabbix](https://www.zabbix.com/)
@@ -67,8 +68,8 @@ The data is output in TLV format and we see that each data has its own hierarchi
 
     nano /etc/apt/sources.list
 
-    deb http://deb.debian.org/debian/ bullseye main non-free contrib
-    deb-src http://deb.debian.org/debian/ bullseye main non-free contrib
+    deb http://deb.debian.org/debian/ bookworm main non-free-firmware non-free contrib
+    deb-src http://deb.debian.org/debian/ bookworm main non-free contrib
 
     apt update
     apt install snmp-mibs-downloader
@@ -79,7 +80,7 @@ Let's test the operation of the MIB database with the command `snmpwalk`.
 
 ### 4. Task
 
-The main drawback of `SNMPv1` is that it does not support user authentication and does not encrypt the data sent. Version `SNMPv3` fixes these two shortcomings and also contains a bunch of other improvements. To access the data, we now need to create a user, so use the program already prepared in advance. For example, we set the user's access to read-only, authentication method and authentication password, and encryption method and encryption key.
+The main drawback of `SNMPv1` is that it does not support user authentication and does not encrypt the data sent. Version `SNMPv3` fixes these two shortcomings and also contains a bunch of other improvements. To access the data, we now need to create a user, so use the program already prepared in advance. For example, we create two users and set the user's access to read-only, authentication method and authentication password, and encryption method and encryption key.
 
     apt install libsnmp-dev
 
@@ -87,23 +88,40 @@ The main drawback of `SNMPv1` is that it does not support user authentication an
 
     net-snmp-create-v3-user -ro -a SHA -A kpovkaboom -x AES -X kpovkaboom testuser
 
+	adding the following line to /var/lib/snmp/snmpd.conf:
+	   createUser testuser SHA "kpovkaboom" AES "kpovkaboom"
+	adding the following line to /etc/snmp/snmpd.conf:
+	   rouser testuser
+
+	net-snmp-create-v3-user -ro -a SHA -A kpovkaboom -x AES -X kpovkaboom kpovuser
+
+	adding the following line to /var/lib/snmp/snmpd.conf:
+	   createUser kpovuser SHA "kpovkaboom" AES "kpovkaboom"
+	adding the following line to /etc/snmp/snmpd.conf:
+	   rouser kpovuser
+
 We check in the configuration files `/var/lib/snmp/snmpd.conf` and `/usr/share/snmp/snmpd.conf` if the user has been created correctly and then restart the SNMP server and test the operation with the command `snmpwalk`.
 
     nano /var/lib/snmp/snmpd.conf
 
     createUser testuser SHA "kpovkaboom" AES "kpovkaboom"
+	createUser kpovuser SHA "kpovkaboom" AES "kpovkaboom"
 
     nano /etc/snmp/snmpd.conf
 
     rouser testuser
+	rouser kpovuser
 
     systemctl restart snmpd.service
 
     nano /var/lib/snmp/snmpd.conf
 
-    usmUser 1 3 0x80001f888082f37f51ace86c6300000000 "testuser" "testuser" NULL .1.3.6.1.6.3.10.1.1.3 0xeadfd1e83a80f141853375b1c4d7660b2be4d297 .1.3.6.1.6.3.10.1.2.4 0xeadfd1e83a80f141853375b1c4d7660b 0x
+    usmUser 1 3 0x80001f8880eae8572fe92f376700000000 "kpovuser" "kpovuser" NULL .1.3.6.1.6.3.10.1.1.3 0x0ba65e9f4aae705647dafac724a659e5ed59e5ed594b9f .1.3.6.1.6.3.10.1.2.4 0x0ba65e9f4aae705647dafac724a659e5 ""
+	usmUser 1 3 0x80001f8880eae8572fe92f376700000000 "testuser" "testuser" NULL .1.3.6.1.6.3.10.1.1.3 0x0ba65e9f4aae705647dafac724a659e5ed59e5ed594b9f .1.3.6.1.6.3.10.1.2.4 0x0ba65e9f4aae705647dafac724a659e5 ""
 
     snmpwalk -v 3 -m all -a SHA -A kpovkaboom -x AES -X kpovkaboom -l authPriv -u testuser 10.0.0.1
+
+If we look at the password hashes of both users, we see that they are identical. The password hashes were created without using a salt and are therefore subject to a [rainbow table attack](https://en.wikipedia.org/wiki/Rainbow_table).
 
 ### 5. Task
 
@@ -143,23 +161,21 @@ If we have a problem starting the `apache2` server, we check if port `80` is alr
 
     apt install net-tools
 
-    netstat -plnt
+    netstat -putln
 
     Active Internet connections (only servers)
-    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
-    tcp        0      0 0.0.0.0:57161           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      767/mariadbd        
-    tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      1/init              
-    tcp        0      0 0.0.0.0:41681           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      618/cupsd           
-    tcp        0      0 0.0.0.0:35931           0.0.0.0:*               LISTEN      635/rpc.mountd      
-    tcp        0      0 0.0.0.0:33949           0.0.0.0:*               LISTEN      -                   
-    tcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   
-    tcp6       0      0 :::54603                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::47405                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::111                  :::*                    LISTEN      1/init              
-    tcp6       0      0 :::80                   :::*                    LISTEN      957/apache2         
-    tcp6       0      0 :::60819                :::*                    LISTEN      635/rpc.mountd      
-    tcp6       0      0 :::46549                :::*                    LISTEN      -                   
-    tcp6       0      0 ::1:631                 :::*                    LISTEN      618/cupsd           
-    tcp6       0      0 :::2049                 :::*                    LISTEN      - 
+	Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+	tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      835/cupsd           
+	tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      891/lighttpd        
+	tcp6       0      0 ::1:631                 :::*                    LISTEN      835/cupsd           
+	tcp6       0      0 :::80                   :::*                    LISTEN      891/lighttpd        
+	udp        0      0 0.0.0.0:5353            0.0.0.0:*                           576/avahi-daemon: r 
+	udp        0      0 0.0.0.0:67              0.0.0.0:*                           873/dhcpd           
+	udp        0      0 0.0.0.0:68              0.0.0.0:*                           566/dhclient        
+	udp        0      0 0.0.0.0:69              0.0.0.0:*                           869/in.tftpd        
+	udp        0      0 0.0.0.0:161             0.0.0.0:*                           839/snmpd           
+	udp        0      0 0.0.0.0:60251           0.0.0.0:*                           576/avahi-daemon: r 
+	udp6       0      0 :::5353                 :::*                                576/avahi-daemon: r 
+	udp6       0      0 :::69                   :::*                                869/in.tftpd        
+	udp6       0      0 ::1:161                 :::*                                839/snmpd           
+	udp6       0      0 :::54171                :::*                                576/avahi-daemon: r 
