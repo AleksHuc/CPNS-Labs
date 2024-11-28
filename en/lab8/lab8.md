@@ -4,8 +4,8 @@
 
 0. Use the network and virtual machines from the previous labs.
 1. Safely download any video from YouTube.
-2. Use VLC to stream video content via the HTTP protocol.
-3. Use VLC to stream video content via a multicast address.
+2. Use VLC to stream video content via the HTTP protocol and capture the exchanged packets with Wireshark.
+3. Use VLC to stream video content via the RTP protocol using a multicast address and capture the exchanged packets with Wireshark.
 
 ## Additional information
 
@@ -25,6 +25,8 @@
 
 [Real Time Streaming Protocol](https://en.wikipedia.org/wiki/Real_Time_Streaming_Protocol) is an application layer network protocol that manages the transmission of multi-media content via an appropriate transport layer protocol.
 
+[Real Time Control Protocol](https://en.wikipedia.org/wiki/RTP_Control_Protocol) is a network protocol that provides statistics and control of RTP connections.
+
 [Multicast](https://en.wikipedia.org/wiki/Multicast) is a reference to a web resource that specifies its location on a computer network and a mechanism for retrieving it.
 
 IP addresses designated for distribution:
@@ -37,56 +39,65 @@ IP addresses designated for distribution:
 
 ### 1. Task
 
-Let's install the `yt-dlp` program to download video content from the [YouTube](https://www.youtube.com/) web platform with `curl`.
+Let's install the `yt-dlp` program to download video content from the [YouTube](https://www.youtube.com/) web platform with [`curl`](https://linux.die.net/man/1/curl). We can also install the [`ffmpeg`](https://www.ffmpeg.org/) toolkit to convert between different media formats.
 
-    apt install curl
+    apt install curl ffmpeg
 
-    sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+    curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
     
-    sudo chmod a+rx /usr/local/bin/yt-dlp 
+    chmod a+rx /usr/local/bin/yt-dlp 
 
 Now restart the terminal window. When we want to download a video, we can first check which formats are available for download.
 
     yt-dlp -F https://www.youtube.com/watch?v=aEvP2tqaZD4
 
-    [youtube] aEvP2tqaZD4: Downloading webpage
-    [youtube] aEvP2tqaZD4: Downloading android player API JSON
-    [info] Available formats for aEvP2tqaZD4:
-    ID  EXT   RESOLUTION FPS CH │  FILESIZE   TBR PROTO │ VCODEC        VBR ACODEC      ABR ASR MORE INFO
-    ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-    sb2 mhtml 48x27        1    │                 mhtml │ images                                storyboard
-    sb1 mhtml 80x45        1    │                 mhtml │ images                                storyboard
-    sb0 mhtml 160x90       1    │                 mhtml │ images                                storyboard
-    139 m4a   audio only      2 │   1.10MiB   49k https │ audio only        mp4a.40.5   49k 22k low, m4a_dash
-    249 webm  audio only      2 │   1.07MiB   48k https │ audio only        opus        48k 48k low, webm_dash
-    250 webm  audio only      2 │   1.42MiB   63k https │ audio only        opus        63k 48k low, webm_dash
-    140 m4a   audio only      2 │   2.91MiB  130k https │ audio only        mp4a.40.2  130k 44k medium, m4a_dash
-    251 webm  audio only      2 │   2.82MiB  126k https │ audio only        opus       126k 48k medium, webm_dash
-    17  3gp   176x144      6  1 │   1.74MiB   77k https │ mp4v.20.3     77k mp4a.40.2    0k 22k 144p
-    160 mp4   256x144     25    │   1.56MiB   69k https │ avc1.4d400c   69k video only          144p, mp4_dash
-    278 webm  256x144     25    │   1.91MiB   85k https │ vp9           85k video only          144p, webm_dash
-    133 mp4   426x240     25    │   3.16MiB  141k https │ avc1.4d4015  141k video only          240p, mp4_dash
-    242 webm  426x240     25    │   3.80MiB  169k https │ vp9          169k video only          240p, webm_dash
-    134 mp4   640x360     25    │   8.59MiB  382k https │ avc1.4d401e  382k video only          360p, mp4_dash
-    18  mp4   640x360     25  2 │ ~11.79MiB  511k https │ avc1.42001E  511k mp4a.40.2    0k 44k 360p
-    243 webm  640x360     25    │   7.06MiB  314k https │ vp9          314k video only          360p, webm_dash
-    135 mp4   854x480     25    │  16.80MiB  747k https │ avc1.4d401e  747k video only          480p, mp4_dash
-    244 webm  854x480     25    │  12.68MiB  564k https │ vp9          564k video only          480p, webm_dash
-    22  mp4   1280x720    25  2 │ ~35.90MiB 1556k https │ avc1.64001F 1556k mp4a.40.2    0k 44k 720p
-    136 mp4   1280x720    25    │  32.09MiB 1427k https │ avc1.4d401f 1427k video only          720p, mp4_dash
-    247 webm  1280x720    25    │  25.70MiB 1143k https │ vp9         1143k video only          720p, webm_dash
-    137 mp4   1920x1080   25    │  56.80MiB 2526k https │ avc1.640028 2526k video only          1080p, mp4_dash
-    248 webm  1920x1080   25    │  45.59MiB 2028k https │ vp9         2028k video only          1080p, webm_dash
+    [youtube] Extracting URL: https://www.youtube.com/watch?v=aEvP2tqaZD4
+	[youtube] aEvP2tqaZD4: Downloading webpage
+	[youtube] aEvP2tqaZD4: Downloading ios player API JSON
+	[youtube] aEvP2tqaZD4: Downloading mweb player API JSON
+	[youtube] aEvP2tqaZD4: Downloading player b46bb280
+	[youtube] aEvP2tqaZD4: Downloading m3u8 information
+	[info] Available formats for aEvP2tqaZD4:
+	ID      EXT   RESOLUTION FPS CH │   FILESIZE   TBR PROTO │ VCODEC          VBR ACODEC      ABR ASR MORE INFO
+	────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+	sb2     mhtml 48x27        1    │                  mhtml │ images                                  storyboard
+	sb1     mhtml 80x45        1    │                  mhtml │ images                                  storyboard
+	sb0     mhtml 160x90       1    │                  mhtml │ images                                  storyboard
+	233     mp4   audio only        │                  m3u8  │ audio only          unknown             Default
+	234     mp4   audio only        │                  m3u8  │ audio only          unknown             Default
+	139-drc m4a   audio only      2 │    1.10MiB   49k https │ audio only          mp4a.40.5   49k 22k low, DRC, m4a_dash
+	139     m4a   audio only      2 │    1.10MiB   49k https │ audio only          mp4a.40.5   49k 22k low, m4a_dash
+	140-drc m4a   audio only      2 │    2.91MiB  129k https │ audio only          mp4a.40.2  129k 44k medium, DRC, m4a_dash
+	140     m4a   audio only      2 │    2.91MiB  130k https │ audio only          mp4a.40.2  130k 44k medium, m4a_dash
+	269     mp4   256x144     25    │ ~  3.82MiB  170k m3u8  │ avc1.4D400C    170k video only
+	160     mp4   256x144     25    │    1.56MiB   69k https │ avc1.4D400C     69k video only          144p, mp4_dash
+	230     mp4   640x360     25    │ ~ 18.10MiB  803k m3u8  │ avc1.4D401E    803k video only
+	134     mp4   640x360     25    │    8.59MiB  382k https │ avc1.4D401E    382k video only          360p, mp4_dash
+	18      mp4   640x360     25  2 │ ≈ 11.50MiB  511k https │ avc1.42001E         mp4a.40.2       44k 360p
+	605     mp4   640x360     25    │ ~ 12.89MiB  572k m3u8  │ vp09.00.21.08  572k video only
+	243     webm  640x360     25    │    7.06MiB  314k https │ vp9            314k video only          360p, webm_dash
+	232     mp4   1280x720    25    │ ~ 58.46MiB 2595k m3u8  │ avc1.4D401F   2595k video only
+	136     mp4   1280x720    25    │   32.09MiB 1427k https │ avc1.4D401F   1427k video only          720p, mp4_dash
+	270     mp4   1920x1080   25    │ ~105.60MiB 4687k m3u8  │ avc1.640028   4687k video only
+	137     mp4   1920x1080   25    │   56.80MiB 2526k https │ avc1.640028   2526k video only          1080p, mp4_dash
 
-Then we decide, for example, on the `22` option and transfer the video to the local disk.
+Then we decide, for example, on the `136` option for video and `140` for audio and transfer the video to the local disk.
 
-    yt-dlp -f 22 https://www.youtube.com/watch?v=aEvP2tqaZD4
+    yt-dlp -f 137+140 https://www.youtube.com/watch?v=aEvP2tqaZD4
 
-    [youtube] aEvP2tqaZD4: Downloading webpage
-    [youtube] aEvP2tqaZD4: Downloading android player API JSON
-    [info] aEvP2tqaZD4: Downloading 1 format(s): 22
-    [download] Destination: Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].mp4
-    [download] 100% of   34.99MiB in 00:00:04 at 7.70MiB/s
+    [youtube] Extracting URL: https://www.youtube.com/watch?v=aEvP2tqaZD4
+	[youtube] aEvP2tqaZD4: Downloading webpage
+	[youtube] aEvP2tqaZD4: Downloading ios player API JSON
+	[youtube] aEvP2tqaZD4: Downloading mweb player API JSON
+	[youtube] aEvP2tqaZD4: Downloading m3u8 information
+	[info] aEvP2tqaZD4: Downloading 1 format(s): 137+140
+	[download] Destination: Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].f137.mp4
+	[download] 100% of   56.80MiB in 00:00:01 at 31.94MiB/s
+	[download] Destination: Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].f140.m4a
+	[download] 100% of    2.91MiB in 00:00:00 at 9.67MiB/s
+	[Merger] Merging formats into "Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].mp4"
+	Deleting original file Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].f140.m4a (pass -k to keep)
+	Deleting original file Slovenian Impressions. Feel pure LOVE. [aEvP2tqaZD4].f137.mp4 (pass -k to keep)
 
 ### 2. Task
 
