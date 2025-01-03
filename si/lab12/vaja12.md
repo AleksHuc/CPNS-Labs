@@ -48,22 +48,62 @@ Sedaj ugotovimo na katerih omrežnih vrata posluša RADIUS strežnik, tako da na
 
     apt install net-tools
 
-    netstat -n -l -p
+    netstat -nlutp
 
-Ugotovimo, da RADIUS strežnik posluša na omrežnih vratih 1812 in sedaj preizkusimo delovanje RADIUS strežnika lokalno, tako da poženemo ukaz `radtest`.
+    Active Internet connections (only servers)
+    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+    tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN      1309/exim4          
+    tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      834/cupsd           
+    tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      776/mariadbd        
+    tcp6       0      0 :::80                   :::*                    LISTEN      795/apache2         
+    tcp6       0      0 ::1:631                 :::*                    LISTEN      834/cupsd           
+    tcp6       0      0 ::1:25                  :::*                    LISTEN      1309/exim4          
+    udp        0      0 0.0.0.0:5353            0.0.0.0:*                           556/avahi-daemon: r 
+    udp        0      0 0.0.0.0:48471           0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:36400           0.0.0.0:*                           556/avahi-daemon: r 
+    udp        0      0 127.0.0.1:18120         0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:1812            0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:1813            0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:161             0.0.0.0:*                           797/snmpd           
+    udp6       0      0 :::5353                 :::*                                556/avahi-daemon: r 
+    udp6       0      0 :::54948                :::*                                1140/freeradius     
+    udp6       0      0 :::1812                 :::*                                1140/freeradius     
+    udp6       0      0 :::1813                 :::*                                1140/freeradius     
+    udp6       0      0 ::1:161                 :::*                                797/snmpd           
+    udp6       0      0 :::35744                :::*                                556/avahi-daemon: r 
+
+
+Ugotovimo, da RADIUS strežnik posluša na omrežnih vratih `1812` in sedaj preizkusimo delovanje RADIUS strežnika lokalno, tako da poženemo ukaz `radtest`.
 
     radtest user1 user1password localhost 1812 password1s
 
+    Sent Access-Request Id 225 from 0.0.0.0:43158 to 127.0.0.1:1812 length 75
+	    User-Name = "user1"
+	    User-Password = "user1password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user1password"
+    Received Access-Accept Id 225 from 127.0.0.1:1812 to 127.0.0.1:43158 length 37
+	    Reply-Message = "Welcome, user1!"
+
 ### 2. Naloga
 
-Začnemo z namestitvijo spletnega strežnika Apache2 `apache2` in knjižice za ovirajanje z RADIUS protokolom `libapache2-mod-auth-radius` preko upravljalca paketkov našega operacijskega sistema.
+Začnemo z namestitvijo spletnega strežnika Apache2 `apache2` preko upravljalca paketkov našega operacijskega sistema.
 
-    apt install apache2 libapache2-mod-auth-radius
+    apt install apache2
 
-V nastavitveni datoteki `000-default.conf` omogočimo ovirajanje z našim lokalnim RADIUS strežnikom za datoteke v mapi `/radius` ter omogočimo dostop le registriranim RADIUS uporabnikom.
+Namestimo tudi modul za overovljanje z RADIUS protokolom `libapache2-mod-auth-radius`.
+
+    wget http://ftp.de.debian.org/debian/pool/main/liba/libapache-mod-auth-radius/libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
+
+    sudo dpkg -i libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
+
+V nastavitveni datoteki `000-default.conf` omogočimo overovljanje z našim lokalnim RADIUS strežnikom za datoteke v mapi `/radius` ter omogočimo dostop le registriranim RADIUS uporabnikom.
 
     nano /etc/apache2/sites-available/000-default.conf
 
+    # Use localhost, the standard RADIUS port, secret, time out after 5 seconds, and retry 3 times.
     AddRadiusAuth localhost:1812 password1s 5:3
     AddRadiusCookieValid 5
 
@@ -118,6 +158,16 @@ Sedaj preizkusimo delovanje RADIUS strežnika lokalno, tako da poženemo ukaz `r
 
     radtest user2 user2password localhost 1812 password2s
 
+    Sent Access-Request Id 215 from 0.0.0.0:40668 to 127.0.0.1:1812 length 75
+	    User-Name = "user2"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 215 from 127.0.0.1:1812 to 127.0.0.1:40668 length 37
+	    Reply-Message = "Welcome, user2!"
+
 Da bo do spletne strani na prvem navideznem računalniku lahko dostopal tudi uporabnik `user2` z RADIUS strežnika na drugem navideznem računalniku, prav tako na drugem navideznem računalniku definiramo novo kraljestvo v datoteki `proxy.conf`.
 
     nano /etc/freeradius/3.0/proxy.conf
@@ -164,7 +214,29 @@ Da se nove nastavitve upoštevajo moramo ponovno zagnati RADIUS strežnik.
 
 Najprej preizkusimo delovanje z ukazom `radtest` in nato še preko brskalnika, kjer uporabnik user2 lahko uspešno pridobi dostop do naslova `http://localhost/radius`.
 
+    radtest user2 user2password IP_OF_THE_SECOND_VM 1812 server1p
+
+    Sent Access-Request Id 206 from 0.0.0.0:54171 to 10.0.2.5:1812 length 75
+	    User-Name = "user2"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 206 from 10.0.2.5:1812 to 10.0.2.15:54171 length 37
+	    Reply-Message = "Welcome, user2!"
+
     radtest user2@realm2.si user2password localhost 1812 password1s
+
+    Sent Access-Request Id 230 from 0.0.0.0:46820 to 127.0.0.1:1812 length 85
+	    User-Name = "user2@realm2.si"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 230 from 127.0.0.1:1812 to 127.0.0.1:46820 length 47
+	    Reply-Message = "Welcome, user2@realm2.si!"
 
 ![Okence za vnos uporabniškega imena in gesla.](slike/vaja12-apache2.png)
 

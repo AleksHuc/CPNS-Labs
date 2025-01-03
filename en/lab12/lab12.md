@@ -48,22 +48,61 @@ Now let's find out on which network port the RADIUS server is listening by insta
 
     apt install net-tools
 
-    netstat -n -l -p
+    netstat -nlutp
 
-We find that the RADIUS server is listening on network port 1812 and now we test the operation of the RADIUS server locally by running the `radtest` command.
+    Active Internet connections (only servers)
+    Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+    tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN      1309/exim4          
+    tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      834/cupsd           
+    tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      776/mariadbd        
+    tcp6       0      0 :::80                   :::*                    LISTEN      795/apache2         
+    tcp6       0      0 ::1:631                 :::*                    LISTEN      834/cupsd           
+    tcp6       0      0 ::1:25                  :::*                    LISTEN      1309/exim4          
+    udp        0      0 0.0.0.0:5353            0.0.0.0:*                           556/avahi-daemon: r 
+    udp        0      0 0.0.0.0:48471           0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:36400           0.0.0.0:*                           556/avahi-daemon: r 
+    udp        0      0 127.0.0.1:18120         0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:1812            0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:1813            0.0.0.0:*                           1140/freeradius     
+    udp        0      0 0.0.0.0:161             0.0.0.0:*                           797/snmpd           
+    udp6       0      0 :::5353                 :::*                                556/avahi-daemon: r 
+    udp6       0      0 :::54948                :::*                                1140/freeradius     
+    udp6       0      0 :::1812                 :::*                                1140/freeradius     
+    udp6       0      0 :::1813                 :::*                                1140/freeradius     
+    udp6       0      0 ::1:161                 :::*                                797/snmpd           
+    udp6       0      0 :::35744                :::*                                556/avahi-daemon: r 
+
+We find that the RADIUS server is listening on network port `1812` and now we test the operation of the RADIUS server locally by running the `radtest` command.
 
     radtest user1 user1password localhost 1812 password1s
 
+    Sent Access-Request Id 225 from 0.0.0.0:43158 to 127.0.0.1:1812 length 75
+	    User-Name = "user1"
+	    User-Password = "user1password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user1password"
+    Received Access-Accept Id 225 from 127.0.0.1:1812 to 127.0.0.1:43158 length 37
+	    Reply-Message = "Welcome, user1!"
+
 ### 2. Task
 
-We start by installing the Apache2 web server `apache2` and the RADIUS interception booklet `libapache2-mod-auth-radius` via our operating system's package manager.
+We start by installing the Apache2 web server `apache2` via our operating system's package manager.
 
-    apt install apache2 libapache2-mod-auth-radius
+    apt install apache2
+
+We also install the module for authentication through RADIUS protocol `libapache2-mod-auth-radius`.
+
+    wget http://ftp.de.debian.org/debian/pool/main/liba/libapache-mod-auth-radius/libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
+
+    sudo dpkg -i libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
 
 In the configuration file `000-default.conf` we enable authentication with our local RADIUS server for files in the `/radius` folder and allow access only to registered RADIUS users.
 
     nano /etc/apache2/sites-available/000-default.conf
 
+    # Use localhost, the standard RADIUS port, secret, time out after 5 seconds, and retry 3 times.
     AddRadiusAuth localhost:1812 password1s 5:3
     AddRadiusCookieValid 5
 
@@ -118,6 +157,16 @@ Now let's test the operation of the RADIUS server locally by running the `radtes
 
     radtest user2 user2password localhost 1812 password2s
 
+    Sent Access-Request Id 215 from 0.0.0.0:40668 to 127.0.0.1:1812 length 75
+	    User-Name = "user2"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 215 from 127.0.0.1:1812 to 127.0.0.1:40668 length 37
+	    Reply-Message = "Welcome, user2!"
+
 So that the web page on the first virtual computer can also be accessed by the user `user2` from the RADIUS server on the second virtual computer, we also define a new realm on the second virtual computer in the `proxy.conf` file.
 
     nano /etc/freeradius/3.0/proxy.conf
@@ -164,7 +213,29 @@ In order for the new settings to be taken into account, we must restart the RADI
 
 First, let's test the operation with the `radtest` command and then via the browser, where user2 can successfully access the address `http://localhost/radius`.
 
+    radtest user2 user2password IP_OF_THE_SECOND_VM 1812 server1p
+
+    Sent Access-Request Id 206 from 0.0.0.0:54171 to 10.0.2.5:1812 length 75
+	    User-Name = "user2"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 206 from 10.0.2.5:1812 to 10.0.2.15:54171 length 37
+	    Reply-Message = "Welcome, user2!"
+
     radtest user2@realm2.si user2password localhost 1812 password1s
+
+    Sent Access-Request Id 230 from 0.0.0.0:46820 to 127.0.0.1:1812 length 85
+	    User-Name = "user2@realm2.si"
+	    User-Password = "user2password"
+	    NAS-IP-Address = 127.0.1.1
+	    NAS-Port = 1812
+	    Message-Authenticator = 0x00
+	    Cleartext-Password = "user2password"
+    Received Access-Accept Id 230 from 127.0.0.1:1812 to 127.0.0.1:46820 length 47
+	    Reply-Message = "Welcome, user2@realm2.si!"
 
 ![Windows for entering username and password.](images/lab12-apache2.png)
 
