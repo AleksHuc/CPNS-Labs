@@ -99,7 +99,7 @@ Namestimo tudi modul za overovljanje z RADIUS protokolom `libapache2-mod-auth-ra
 
     sudo dpkg -i libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
 
-V nastavitveni datoteki `000-default.conf` omogočimo overovljanje z našim lokalnim RADIUS strežnikom za datoteke v mapi `/radius` ter omogočimo dostop le registriranim RADIUS uporabnikom.
+V nastavitveni datoteki `000-default.conf` znotraj `<VirtualHost *:80>` omogočimo overovljanje z našim lokalnim RADIUS strežnikom za datoteke v mapi `/radius` ter omogočimo dostop le registriranim RADIUS uporabnikom.
 
     nano /etc/apache2/sites-available/000-default.conf
 
@@ -123,7 +123,7 @@ V mapi sedaj ustvarimo novo mapo `radius` v mapi `/var/www/html` in v njej ustva
 
     nano /var/www/html/radius/index.html
 
-    service freeradius restart
+    service apache2 restart
 
 Delovanje ovirjanja preizkusimo, tako da z brskalnikom poskusimo dostopati do naslova `http://localhost/radius`, kjer moramo biti pozvani za vnos uporabniškega imena in gesla. Ob vnosu uporabniškega imena in gesla RADIUS uporabnika, ki smo ga ustvarili v prejšnjem koraku, nam je dostop do strani omogočen, drugače pa nam je dostop zavrnjen.
 

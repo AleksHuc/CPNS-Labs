@@ -98,7 +98,7 @@ We also install the module for authentication through RADIUS protocol `libapache
 
     sudo dpkg -i libapache2-mod-auth-radius_1.5.8-1.3+b2_amd64.deb
 
-In the configuration file `000-default.conf` we enable authentication with our local RADIUS server for files in the `/radius` folder and allow access only to registered RADIUS users.
+In the configuration file `000-default.conf` inside `<VirtualHost *:80>` we enable authentication with our local RADIUS server for files in the `/radius` folder and allow access only to registered RADIUS users.
 
     nano /etc/apache2/sites-available/000-default.conf
 
@@ -122,7 +122,7 @@ Now create a new `radius` folder in the folder `/var/www/html` and create any HT
 
     nano /var/www/html/radius/index.html
 
-    service freeradius restart
+    service apache2 restart
 
 We test the operation of blocking by using a browser to try to access the address `http://localhost/radius`, where we must be asked to enter a username and password. When entering the username and password of the RADIUS user that we created in the previous step, we are granted access to the page, otherwise access is denied.
 
