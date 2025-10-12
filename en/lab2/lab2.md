@@ -157,15 +157,15 @@ We achieved that the virtual computer is running a DHCP server that automaticall
     4 packets transmitted, 0 received, 100% packet loss, time 3062ms
 
 
-First, let's enable routing on the first virtual machine in the `/etc/sysctl.conf` file.
+First, let's enable routing on the first virtual machine in the `/etc/sysctl.d/sysctl.conf` file.
 
-    nano /etc/sysctl.conf
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 To take into account the changes in Linux kernel parameters, use the `sysctl` command.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
 With the packet manager, we install the `iptables` package, which represents a firewall and allows mapping IP addresses to network addresses by our first virtual machine.
 

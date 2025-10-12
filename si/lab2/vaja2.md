@@ -157,15 +157,15 @@ Dosegli smo, da navidezni računalnik poganja DHCP strežnik, ki avtomatsko dode
     4 packets transmitted, 0 received, 100% packet loss, time 3062ms
 
 
-Najprej omogočimo usmerjanje na prvem navideznem računalnik v datoteki `/etc/sysctl.conf`.
+Najprej omogočimo usmerjanje na prvem navideznem računalnik v datoteki `/etc/sysctl.d/sysctl.conf`.
 
-    nano /etc/sysctl.conf
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 Da se sprememba parametrov jedra Linux-a upošteva, uporabimo ukaz `sysctl`.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
 Z upravljalcem paketov namestimo paket `iptables`, ki predstavlja požarni zid in omogoča preslikovanje IP omrežni naslovov, ki ga bo izvedel naš prvi navidezni računalnik.
 
