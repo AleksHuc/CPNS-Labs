@@ -3,7 +3,7 @@
 ## Navodila
 
 1. Postavite dva navidezna računalnika. Prvi ima dve omrežni kartici, kjer je prva povezana na omrežje `NAT` in druga na `Notranje omrežje`. Drugi ima eno omrežno kartico, ki je povezana na`Notranje omrežje`.
-2. Postavite Dynamic Host Configuration Protocol (DHCP) strežnik na prvem navideznem računalniku, ki ima dve omrežno kartici. DHCP naj deluje na omrežju `Notranje omrežje` in omogoča drugim navideznim računalnikov avtomatsko pridobivanje omrežnih naslovov.
+2. Postavite [Dynamic Host Configuration Protocol (DHCP)](https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) strežnik na prvem navideznem računalniku, ki ima dve omrežno kartici. DHCP naj deluje na omrežju `Notranje omrežje` in omogoča drugim navideznim računalnikov avtomatsko pridobivanje omrežnih naslovov.
 3. Poskrbite, da navidezni računalnik, ki je povezano samo v `Notranje omrežje` lahko dostopa do spleta preko navideznega računalnika na katerem teče DHCP strežnik.
 
 ## Dodatne informacije
@@ -17,8 +17,6 @@ Požarni zid [`nftables`](https://manpages.debian.org/buster/nftables/nft.8.en.h
 Ukaz [`journalctl`](https://www.man7.org/linux/man-pages/man1/journalctl.1.html) nam omogoča branje `systemd` beležk oz logov.
 
 Ukaz [`systemctl`](https://www.man7.org/linux/man-pages/man1/systemctl.1.html) nam omogoča upravljanje s stanjem `systemd` sistema in upravljanje s programi, ki se izvajajo v ozadju.
-
-Ukaz [`dhclient`](https://linux.die.net/man/8/dhclient) nam omogoča upravljanje s protokolom DHCP s strani klienta.
 
 ## Podrobna navodila
 

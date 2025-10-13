@@ -3,7 +3,7 @@
 ## Instructions
 
 1. Set up two virtual machines. The first has two network adapters, where the first is connected to the `NAT` network and the second to the `Internal network`. The other has one network adapter connected to the `Internal network`.
-2. Place a Dynamic Host Configuration Protocol (DHCP) server on the first virtual machine that has two network adapters. DHCP should run on the `Internal network` and allow other virtual machines to automatically obtain network addresses.
+2. Place a [Dynamic Host Configuration Protocol (DHCP)](https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) server on the first virtual machine that has two network adapters. DHCP should run on the `Internal network` and allow other virtual machines to automatically obtain network addresses.
 3. Make sure that the virtual computer that is connected only to the `Internal network` can access the Internet through the virtual computer on which the DHCP server is running.
 
 ## Additional information
