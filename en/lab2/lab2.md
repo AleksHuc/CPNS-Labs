@@ -16,9 +16,7 @@ Firewall [`iptables`](https://linux.die.net/man/8/iptables) or [`nf_tables`](htt
 
 The command [`journalctl`](https://www.man7.org/linux/man-pages/man1/journalctl.1.html) allows us to read `systemd` logs.
 
-The ['systemctl'](https://www.man7.org/linux/man-pages/man1/systemctl.1.html) command allows us to manage `systemd` system and manage programs running in the background.
-
-The ['dhclient'] (https://linux.die.net/man/8/dhclient) command allows us to manage DHCP as a client.
+The [`systemctl`](https://www.man7.org/linux/man-pages/man1/systemctl.1.html) command allows us to manage `systemd` system and manage programs running in the background.
 
 ## Detailed instructions
 
@@ -81,14 +79,6 @@ After the installation, the DHCP server gives us an error that it could not star
 
     journalctl -xe -n 100
 
-We can also follow the Linux OS logs stored in `/var/log/syslog` in real-time.
-
-    tail -f /var/log/syslog
-
-Or.
-
-    less /var/log/syslog    # (and press the F key on the keyboard)
-
 In the `/etc/default/isc-dhcp-server` file, set the network adapter on which the `isc-dhcp-server` DHCP server should run.
 
     nano /etc/default/isc-dhcp-server
@@ -128,10 +118,9 @@ On the second virtual computer, you can also manually add DNS servers in the `/e
 
     prepend domain-name-servers 1.1.1.1;
 
-On the second virtual machine, we can renew DHCP for a new IP address to also obtain new DNS settings.
+On the second virtual machine, we can restart networking to renew DHCP for a new IP address to also obtain new DNS settings.
 
-    dhclient -r enp0s3
-    dhclient enp0s3
+    systemctl restart isc-dhcp-server.service
 
 ### 3. Task
 

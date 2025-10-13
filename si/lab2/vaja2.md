@@ -81,14 +81,6 @@ Po koncu namestitve nam DHCP strežni sporoči napako, da se ni mogel zagnati. D
 
     journalctl -xe -n 100
 
-Beležkam Linux operacijskega sistema v `/var/log/syslog` lahko sledimo tudi v realnem času.
-
-    tail -f /var/log/syslog
-
-Ali.
-
-    less /var/log/syslog    # (in pritisnemo tipko F na tipkovnici)
-
 V datoteki `/etc/default/isc-dhcp-server` nastavimo omrežno kartico na kateri naj deluje `isc-dhcp-server` DHCP strežnik.
 
     nano /etc/default/isc-dhcp-server
@@ -128,10 +120,9 @@ Na drugemu navideznemu računalniku lahko DNS strežnike dodamo tudi ročno v da
 
     prepend domain-name-servers 1.1.1.1;
 
-Na drugem navideznem računalniku, lahko ponovno zaprosimo DHCP za nov IP naslov in tako pridobimo nove nastavitve za DNS.
+Na drugem navideznem računalniku, lahko ponovno zaženemo omrežje in tako zaprosimo DHCP za nov IP naslov in tako pridobimo nove nastavitve za DNS.
 
-    dhclient -r enp0s3
-    dhclient enp0s3
+    systemctl restart isc-dhcp-server.service
 
 ### 3. Naloga
 
