@@ -21,7 +21,7 @@ Ukaz [`netstat`](https://linux.die.net/man/8/netstat) predstavlja orodje za prik
 Ukaz [`cp`](https://www.man7.org/linux/man-pages/man1/cp.1.html) nam omogoča kopiranje datotek in map od izvora k ponoru.
  
 ## Podrobna navodila
-### Namestitev Wireshark
+### 1. Namestitev Wireshark
 Sedaj namestimo program za zajemanje paketkov na omrežju [Wireshark](https://www.wireshark.org/) preko upravljalca paketkov našega operacijskega sistema.
 
 	apt install wireshark
@@ -48,7 +48,7 @@ V primeru, da ste izbrali možnost `Ne`, lahko ponovno prikličete nastavitev z 
 
 Sedaj ponovno poženemo navidezni računalnik in poženemo Wireshark, da spremlja promet na omrežni kartici `enp0s8`.
 
-### Namestitev TFTP strežnika
+### 2. Namestitev TFTP strežnika
 
 Na strežniku namestimo željeno implementacijo `TFTP` strežnika, na primer `tftpd-hpa` preko upravljalca paketkov našega operacijskega sistema.
 
@@ -86,13 +86,15 @@ Na klientu sedaj namestimo `TFTP` klienta preko upravljalca paketkov našega ope
 
 	cat test.txt
 
-### Namestitev HTTP strežnika
+### 3. Namestitev HTTP strežnika
 
 Na strežniku namestimo željeno implementacijo `HTTP` strežnika, na primer `lighttpd` preko upravljalca paketkov našega operacijskega sistema.
 
 	apt install lighttpd
 
 Nastavitve `HTTP` strežnika preverimo v nastavitveni datoteki `/etc/lighttpd/lighttpd.conf`, kjer nastavimo mapo, ki jo strežnik ponuja prek omrežja.
+
+	nano /etc/lighttpd/lighttpd.conf
 
 	server.modules = (
         "mod_indexfile",
@@ -171,7 +173,7 @@ Na klientu sedaj z ukazom [`wget`](https://www.man7.org/linux/man-pages/man1/wge
 
 	cat test.txt
 
-### Testiranje hitrosti prenosa datoteke s protokoloma HTTP in TFTP
+### 4. Testiranje hitrosti prenosa datoteke s protokoloma HTTP in TFTP
 
 Katere storitve trenutno tečejo na našem strežniku in na katerih vratih poslušajo lahko preverimo z orodjem [`netstat`](https://linux.die.net/man/8/netstat).
 

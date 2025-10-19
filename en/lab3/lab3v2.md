@@ -22,7 +22,7 @@ The [`netstat`](https://linux.die.net/man/8/netstat) command is a tool to displa
 The [`cp`](https://www.man7.org/linux/man-pages/man1/cp.1.html) command copies files and directories from source to destination.
  
 ## Detailed instructions
-### Instalation of Wireshark
+### 1. Instalation of Wireshark
 Now let's install the network packet capture program [Wireshark](https://www.wireshark.org/) through our operating system's packet manager.
 
 	apt install wireshark
@@ -49,7 +49,7 @@ In case you selected `No`, you can recall the configuration with the [`dpkg-reco
 
 Now we restart the virtual machine and run Wireshark to monitor the traffic on the `enp0s8` NIC.
 
-### Instalation of TFTP server
+### 2. Instalation of TFTP server
 
 On the server, we install the desired `TFTP` server implementation, for example `tftpd-hpa` via the package manager of our operating system.
 
@@ -87,13 +87,15 @@ On the client, we now install the `TFTP` client through the package manager of o
 
 	cat test.txt
 
-### Instalation of HTTP server
+### 3. Instalation of HTTP server
 
 We install the desired HTTP server implementation on the server, for example `lighttpd' via the package manager of our operating system.
 
 	apt install lighttpd
 
 We check the `HTTP` settings of the server in the configuration file `/etc/lighttpd/lighttpd.conf`, where we set the folder that the server offers over the network.
+
+	nano /etc/lighttpd/lighttpd.conf
 
 	server.modules = (
         "mod_indexfile",
@@ -172,7 +174,7 @@ On the client, we now use the command [`wget`](https://www.man7.org/linux/man-pa
 
 	cat test.txt
 
-### HTTP and TFTP file transfer speed testing
+### 4. HTTP and TFTP file transfer speed testing
 
 We can check which services are currently running on our server and which ports they are listening on with the [`netstat`](https://linux.die.net/man/8/netstat) tool.
 
