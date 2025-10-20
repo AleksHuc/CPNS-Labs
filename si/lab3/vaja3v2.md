@@ -6,6 +6,7 @@
 2. Namestite Trivial File Transport Protocol (TFTP) strežnik in preko njega prenesite datoteko na drug navidezni računalnik.
 3. Namestite Hypertext Transfer Protocol (HTTP) strežnik in preko njega prenesite datoteko na drug navidezni računalnik.
 4. Primerjajte hitrost prenosa datoteke med protokoloma TFTP in HTTP.
+
 ## Dodatne informacije
 
 Ukaz [`usermod`](https://linux.die.net/man/8/usermod) nam omogoča spreminjanje lastnosti računa uporabnika.
