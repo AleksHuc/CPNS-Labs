@@ -12,26 +12,55 @@
 
 Zagon Linux operacijskega sistema ima naslednje korake:
 
-1. Ob pritisku na gumb za zagon računalnika procesor začne z izvajanjem kode na v naprej določenem naslovu, na primer na `0xFFFFFFF0` pri 32-bitnih in 64-bitnih x86 procesorjih.
-2. Izvajati začne ukaze shranjene v [Basic Input Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS) sistemu, ki se nahaja na ločenem pomnilniku ([Read Only Memory - ROM](https://en.wikipedia.org/wiki/Read-only_memory)) na matični plošči, ki zazna in upravlja s strojno opremo ter preda izvajanje sistemskemu nalagalniku. Izvede se [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self-test) proces, ki zazna ter preveri strojno opremo, na primer procesor, pomnilnik, grafična kartica, trdi diski ter ostale vhodno/izhodno naprave in jih zažene.
-3. Nato se izvedejo še [BIOS razširitve (BIOS Extensions)](https://en.wikipedia.org/wiki/BIOS#Extensions_(option_ROMs)), ki omogočajo izvedbo ukazov shranjenih v BIOS pomnilnikih razširitvenih kartic za njihov zagon, na primer mrežne kartice, diskovni krmilniki, grafični pospeševalniki in ostale naprave.
-4. BIOS prebere prvih 512B na izbranem podatkovnemu nosilcu, ki je na voljo, in jih zažene, omenjenemu programu nudi tudi možnost za dostop do nadaljnjih podatkov na napravi. Teh prvih 512B na nosilcu imenujemo [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record), ki v prvih 446B vsebuje sistemski nalagalnik, nato v naslednjih 64B tabelo razdelkov in v zadnjih 2B še podpis. MBR se lahko nahaja na trdem disku, USB prenosnem pomnilniku, CD ali DVD nosilcu.
-5. [Sistemski nalagalnik (Bootloader)](https://en.wikipedia.org/wiki/Bootloader) v MBR poskrbi za zagon operacijskega sistema. Ker sistemski nalagalnik za sodobni operacijski sistem potrebuje več prostora kot 446B, ga razdelimo v dva dela. 1. stopnja sistemskega nalagalnika se nahaja v MBR in poskrbi za zagon 2. stopnje sistemskega nalagalnika, ki se nahaja v eni od razdelkov na podatkovnem nosilcu.
-6. Sistemski nalagalnik na 2. stopnji poskrbi za zagon operacijskega sistema, tako da požene [jedro (kernel)](https://en.wikipedia.org/wiki/Linux_kernel) z dodatnimi parametri ter [začetni navidezni disk (initial RAM disk - initrd or initramfs)](https://en.wikipedia.org/wiki/Initial_ramdisk) z začasnim datotečnim izhodiščnim datotečnim sistemom.
-7. Nato se zažene [prvi program (init)](https://en.wikipedia.org/wiki/Init) na operacijskem sistemu po poskrbi za zagon in dobi procesorsko oznako 1.
-8. Sedaj sledi zagon uporabniških programov, grafičnega okolja in drugih programov.
+### Zagon z BIOS
 
-Moderni sistemi uporabljajo [Unified Extensible Firmware Interface (UEFI)](https://en.wikipedia.org/wiki/UEFI) namesto BIOS-a. Sam postopek zagona operacijskega sistema poteka podobno, le da UEFI uporablja EFI razdelek poljubne velikosti za hranjenje sistemskega nalagalnika in tabele razdelkov tipa [GUID Partition Table (GPT)](https://en.wikipedia.org/wiki/GUID_Partition_Table) ter tako odpravlja pomanjkljivosti pristopa MBR.
+**1. Fizični zagon računalnika:** Po pritisku na gumb [CPU](https://en.wikipedia.org/wiki/Central_processing_unit) začne na vnaprej določenem naslovu (reset vektor; pri procesorjih [x86](https://en.wikipedia.org/wiki/X86) tipično `0xFFFFFFF0`, tako pri 32 in 64-bitnih različicah).
 
-Pogosti sistemski nalagalniki:
+**2. Zagon strojne opreme:** [Basic Input Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS), ki se nahaja na ločenem pomnilniku ([Read Only Memory - ROM](https://en.wikipedia.org/wiki/Read-only_memory)) na matični plošči, izvede [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self-test) ki, zazna inicializira ter preiskusi strojno opremo, na primer procesor, pomnilnik, grafično kartico, trdi diski ter ostale vhodno/izhodno naprave in jih zažene. Po potrebi se izvedejo še [BIOS razširitve (BIOS Extensions)](https://en.wikipedia.org/wiki/BIOS#Extensions_(option_ROMs)), ki omogočajo izvedbo ukazov shranjenih v BIOS pomnilnikih razširitvenih kartic za njihov zagon, na primer mrežne kartice, diskovni krmilniki, grafični pospeševalniki in ostale naprave.
 
-- [GNU GRand Unified Bootloader (GRUB)](https://en.wikipedia.org/wiki/GNU_GRUB)
-- [SYSLINUX](https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX)
-- [ISOLINUX](https://wiki.syslinux.org/wiki/index.php?title=ISOLINUX)
-- [PXELINUX](https://wiki.syslinux.org/wiki/index.php?title=PXELINUX)
-- [LILO](https://en.wikipedia.org/wiki/LILO_(bootloader))
+**3. Izbira zagonske naprave:** Glede na vrstni red zagona BIOS naloži [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record) (prvih 512 B) iz izbranega diska v `0x7C00` in skoči tja.
 
-Ukaz [`mount`](https://linux.die.net/man/8/mount) nam omogoča priključitev datotečnega sistema na nosilcu, da lahko do njega dostopamo v našem operacijskem sistemu.
+Struktura MBR:
+
+- 446 B zagonska koda,
+- 64 B (4×16 B) tabela razdelkov,
+- 2 B podpis `0x55AA`.
+
+**4. Sistemski nalagalnik:** Zagonska koda ali [Sistemski nalagalnik (Bootloader)](https://en.wikipedia.org/wiki/Bootloader) v MBR v enem ali več korakih poskrbi za zagon operacijskega sistema. 1. stopnja v MBR je zelo majhna; naloži stopnjo 1.5 (v `post-MBR` prostoru ali v `BIOS Boot` razdelku pri [GUID Partition Table (GPT)](https://en.wikipedia.org/wiki/GUID_Partition_Table)) in nato 2. stopnjo kot datoteko v direktorju `/boot`. 
+
+**5. Nalaganje jedra:** 2. stopnja sistemskega nalagalnika naloži Linuxovo [jedro (kernel - vmlinuz)](https://en.wikipedia.org/wiki/Linux_kernel) in [začetni navidezni disk (initial RAM disk - initramfs (prej initrd))](https://en.wikipedia.org/wiki/Initial_ramdisk) ter posreduje parametre jedra.
+
+### Zagon z UEFI
+
+**1. Fizični zagon računalnika in 2. Zagon strojne opreme:** potekata zelo podobno, le da uporabljata [Unified Extensible Firmware Interface (UEFI)](https://en.wikipedia.org/wiki/UEFI) namesto BIOS-a (UEFI faze SEC/PEI/DXE, UEFI Extensions, UEFI gonilniki).
+
+**3. Izbira zagonske naprave:** UEFI uporabi [NVRAM](https://wikileaks.org/ciav7p1/cms/page_26968097.html) vnose (`BootOrder`, `Boot####`) in naloži EFI aplikacijo (`*.efi`) iz ESP – EFI System Partition (FAT32, običajno 100–512 MiB).
+
+**4. Sistemski nalagalnik:** Nalagalnik je EFI aplikacija na ESP (npr. GRUB EFI, systemd-boot, rEFInd, Limine) ali neposreden zagon jedra (EFI-stub/direct boot). Možen Secure Boot (npr. prek shim).
+
+**5. Nalaganje jedra:** Bootloader ali UEFI (direct) naloži jedro in initramfs, posreduje cmdline in UEFI memory map/hand-off. Ob Secure Boot je veriga podpisov lahko razširjena do jedra (in pogosto initramfs).
+
+### Kaj stori Linux po nalaganju jedra
+
+**1. Initramfs:** Jedro razširi initramfs (cpio arhiv v RAM-u), naloži gonilnike, nastavi [`udev`](https://en.wikipedia.org/wiki/Udev), poišče korenski datotečni sistem.
+
+**2. Preklop na root:** Priklopi korenski datotečni sistem (npr. na `/`) in izvede `switch_root/pivot_root`. Priklop datotečnega sistema na operacijski sistem se izvede z ukazom [`mount`](https://linux.die.net/man/8/mount).
+
+**3. PID 1 – init:** Zažene [`/sbin/init`](https://en.wikipedia.org/wiki/Init) (najpogosteje [`systemd`](https://en.wikipedia.org/wiki/Systemd)), ki potem zažene storitve, nastavi tip izvajanja [`runlevel`](https://en.wikipedia.org/wiki/Runlevel), prijavni zaslon, grafično okolje ipd.
+
+### Omrežnem zagonu in zagonu z medijev
+
+**Optični mediji:** Zagon poteka po standardu [El Torito](https://en.wikipedia.org/wiki/ISO_9660#El_Torito); MBR se ne uporablja.
+
+**Mrežni zagon:** [Okolje za zagon preko omrežja (Preboot Execution Environment - PXE)](https://en.wikipedia.org/wiki/Preboot_Execution_Environment) prenese zagonsko sliko prek TFTP/HTTP (pogosto PXELINUX ali iPXE).
+
+### Pogosti sistemski nalagalniki
+- [GNU GRand Unified Bootloader (GRUB)](https://en.wikipedia.org/wiki/GNU_GRUB) – zmogljiv odprtokodni nalagalnik iz projekta GNU, ki podpira več operacijskih sistemov in konfiguracij.
+- [systemd-boot](https://en.wikipedia.org/wiki/Systemd-boot) – preprost UEFI zagonski upravitelj (prej znan kot gummiboot), vključen v `systemd`, ki omogoča izbiro med nameščenimi sistemi in urejanje parametrov jedra.
+- [rEFInd](https://en.wikipedia.org/wiki/REFInd) - grafični zagonski upravitelj za UEFI sisteme, namenjen enostavnemu izbiranju med več operacijskimi sistemi; nastal je kot razširitev opuščenega projekta rEFIt.
+- [Limine](https://wiki.archlinux.org/title/Limine) - sodoben, večplatformni zagonski nalagalnik z podporo za BIOS in UEFI, razvit kot referenčna implementacija Limine zagonskega protokola; omogoča zagon Linuxa in veriženje (chainload) drugih nalagalnikov.
+- [SYSLINUX](https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX) - zbirka lahkih zagonskih nalagalnikov, prvotno namenjenih BIOS/MBR sistemom. Vključuje več specializiranih različic, npr. [ISOLINUX](https://wiki.syslinux.org/wiki/index.php?title=ISOLINUX) za zagonske CD/DVD medije (ISO 9660), [PXELINUX](https://wiki.syslinux.org/wiki/index.php?title=PXELINUX) za omrežni zagon prek PXE protokola, in [EXTLINUX/EFILINUX](https://wiki.syslinux.org/wiki/index.php?title=EXTLINUX) za zagon z različnih datotečnih sistemov (tudi UEFI podpora v EFILINUX modulu).
+- [LILO](https://en.wikipedia.org/wiki/LILO_(bootloader)) - starejši Linux zagonski nalagalnik za BIOS sisteme; zgodovinsko je bil privzet v mnogih distribucijah pred prehodom na GRUB (razvoj LILO je bil zaključen leta 2015).
 
 ## Podrobna navodila
 
@@ -96,29 +125,46 @@ V datoteki `/etc/dhcp/dhcpd.conf` pa nastavimo katero omrežje bo upravljal DHCP
       next-server 10.0.0.1;
 	}
 
-Nato omogočimo usmerjanje v datoteki `/etc/sysctl.conf`.
+Da se nastavitve upoštevajo, ponovno zaženemo `isc-dhcp-server` DHCP strežnik.
 
-    nano /etc/sysctl.conf
+    systemctl restart isc-dhcp-server.service
+
+Nato omogočimo usmerjanje tako, da ustvarimo datoteko `/etc/sysctl.d/sysctl.conf` in v njej omogočimo usmerjanje paketkov.
+
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 Da se sprememba parametrov jedra Linux-a upošteva, uporabimo ukaz `sysctl`.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
-Nato pa še nastavimo preslikovanje IP omrežni naslovov. Če paketa `iptables` še nimamo nameščenega, ga namestimo z upravljalcem paketov operacijskega sistema.
+Nato pa še nastavimo preslikovanje IP omrežni naslovov. Če paketa `iptables` še nimamo nameščenega, ga namestimo z upravljavcem paketov operacijskega sistema.
 
     apt install iptables
 
     iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE
 
+	iptables -t nat -L -v
+
+	Chain PREROUTING (policy ACCEPT 2 packets, 1152 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain OUTPUT (policy ACCEPT 20 packets, 2816 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain POSTROUTING (policy ACCEPT 6 packets, 1122 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+   	   14  1694 MASQUERADE  all  --  any    enp0s3  anywhere             anywhere   
+
 Poskrbimo da se pravila, ki jih vnesemo v `iptables`, ohranijo, tako da namestimo `iptables-persistent` in jih shranimo.
 
     apt install iptables-persistent
 
-Da se nastavitve upoštevajo, ponovno zaženemo `isc-dhcp-server` DHCP strežnik.
-
-    systemctl restart isc-dhcp-server.service
+	iptables-save > /etc/iptables/rules.v4
 
 ### 2. Naloga
 
@@ -134,6 +180,8 @@ Namestimo TFTP strežnik, na primer `tftpd-hpa` in v nastavitveni datoteki `/etc
     TFTP_DIRECTORY="/srv/tftp"
     TFTP_ADDRESS=":69"
     TFTP_OPTIONS="-v -c --secure"
+
+	systemctl restart tftpd-hpa.service
 
 ### 3. Naloga
 

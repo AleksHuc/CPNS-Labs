@@ -10,26 +10,57 @@
 
 ## Additional information
 
-Booting a Linux operating system has the following steps:
+Booting the Linux operating system has the following steps:
 
-1. When you press the computer's start button, the processor starts executing code at a predetermined address, for example `0xFFFFFFF0` on 32-bit and 64-bit x86 processors.
-2. It starts executing commands stored in the [Basic Input Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS) system located on a separate memory ([Read Only Memory - ROM](https://en.wikipedia.org/wiki/Read-only_memory)) on the motherboard that detects and controls the hardware and hands over execution to the bootloader. A [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self-test) process is performed that detects and checks hardware such as processor, memory, graphics card, hard disks and other input/output devices.
-3. Next, [BIOS Extensions](https://en.wikipedia.org/wiki/BIOS#Extensions_(option_ROMs)) are run, which enables the execution of commands stored in the BIOS flash of expansion cards for their startup, for example network cards, disk controllers, graphics accelerators and other devices.
-4. The BIOS reads the first 512B of the selected data volume available and starts them, it also provides the mentioned program with the possibility to access further data on the device. These first 512B on the volume are called [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record), which contains the bootloader in the first 446B, then the partition table in the next 64B and the signature in the last 2B . The MBR can be located on a hard drive, USB flash drive, CD or DVD.
-5. [Bootloader](https://en.wikipedia.org/wiki/Bootloader) in the MBR takes care of starting the operating system. Since the system loader for a modern operating system needs more space than 446B, we split it into two parts. Stage 1 bootloader resides in the MBR and provides booting for stage 2 bootloader, which resides in one of the partitions on the data volume.
-6. The 2 stage bootloader takes care of starting the operating system by starting the [kernel](https://en.wikipedia.org/wiki/Linux_kernel) with additional parameters and the [initial virtual disk (initial RAM disk - initrd or initramfs)](https://en.wikipedia.org/wiki/Initial_ramdisk) with a temporary initial file system.
-7. Then the [first program (init)](https://en.wikipedia.org/wiki/Init) is run on the operating system that takes care of booting and gets the process ID of 1.
-8. Now the user programs, graphic environment and other programs are able to start.
+### Booting with BIOS
 
-Common bootloaders:
+**1. Physical power-on:** After pressing the power button, the [CPU](https://en.wikipedia.org/wiki/Central_processing_unit) starts at a predefined address (the reset vector; on [x86](https://en.wikipedia.org/wiki/X86) processors typically `0xFFFFFFF0`, for both 32-bit and 64-bit variants).
 
-- [GNU GRand Unified Bootloader (GRUB)](https://en.wikipedia.org/wiki/GNU_GRUB)
-- [SYSLINUX](https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX)
-- [ISOLINUX](https://wiki.syslinux.org/wiki/index.php?title=ISOLINUX)
-- [PXELINUX](https://wiki.syslinux.org/wiki/index.php?title=PXELINUX)
-- [LILO](https://en.wikipedia.org/wiki/LILO_(bootloader))
+**2. Hardware initialization:** The [Basic Input/Output System (BIOS)](https://en.wikipedia.org/wiki/BIOS), located in separate memory ([Read-Only Memory – ROM](https://en.wikipedia.org/wiki/Read-only_memory)) on the motherboard, performs the [Power-On Self-Test (POST)](https://en.wikipedia.org/wiki/Power-on_self_test) which detects, initializes, and tests hardware such as the CPU, RAM, GPU, hard drives, and other I/O devices, then brings them up. If present, [BIOS extensions](https://en.wikipedia.org/wiki/BIOS#Extensions_%28option_ROMs%29) run as well, allowing execution of code stored in option ROMs on expansion cards to initialize devices such as NICs, disk controllers, graphics accelerators, and others.
 
-The [`mount`](https://linux.die.net/man/8/mount) command allows us to mount a file system on a volume so that it can be accessed by our operating system.
+**3. Boot device selection:** Based on the configured boot order, the BIOS loads the [Master Boot Record (MBR)](https://en.wikipedia.org/wiki/Master_boot_record) (the first 512 B) from the chosen disk to `0x7C00` and jumps there.
+
+MBR structure:
+
+- 446 B boot code,
+- 64 B (4×16 B) partition table,
+- 2 B signature `0x55AA`.
+
+**4. Bootloader:** The boot code or [bootloader](https://en.wikipedia.org/wiki/Bootloader) in the MBR starts the OS in one or more stages. Stage 1 in the MBR is very small; it loads stage 1.5 (in the post-MBR area or in the `BIOS Boot` partition for [GUID Partition Table (GPT)](https://en.wikipedia.org/wiki/GUID_Partition_Table)) and then stage 2 as a file from the `/boot` directory.
+
+**5. Loading the kernel:** The bootloader’s stage 2 loads the Linux [kernel (vmlinuz)](https://en.wikipedia.org/wiki/Linux_kernel) and the [initial RAM disk (initramfs, formerly initrd)](https://en.wikipedia.org/wiki/Initial_ramdisk), and passes kernel parameters.
+
+### Booting with UEFI
+
+**1. Physical power-on & 2. Hardware initialization:** Proceed similarly, but using the [Unified Extensible Firmware Interface (UEFI)](https://en.wikipedia.org/wiki/UEFI) instead of BIOS (UEFI phases SEC/PEI/DXE, UEFI extensions, UEFI drivers).
+
+**3. Boot device selection:** UEFI uses [NVRAM](https://wikileaks.org/ciav7p1/cms/page_26968097.html) entries (`BootOrder`, `Boot####`) and loads an EFI application (`*.efi`) from the ESP – EFI System Partition (FAT32, typically 100–512 MiB).
+
+**4. Bootloader:** The bootloader is an EFI application on the ESP (e.g., GRUB EFI, systemd-boot, rEFInd, Limine) or the kernel is booted directly (EFI-stub/direct boot). Secure Boot is possible (e.g., via shim).
+
+**5. Loading the kernel:** The bootloader or UEFI (direct) loads the kernel and initramfs, passes the cmdline, and provides the UEFI memory map/hand-off. With Secure Boot, the signature chain can extend to the kernel (and often the initramfs).
+
+### What Linux does after the kernel loads
+
+**1. Initramfs:** The kernel unpacks the initramfs (a cpio archive in RAM), loads drivers, sets up [`udev`](https://en.wikipedia.org/wiki/Udev), and locates the root filesystem.
+
+**2. Switch to root:** It mounts the root filesystem (e.g., at `/`) and executes `switch_root/pivot_root`. Mounting filesystems into the OS is done with the [`mount`](https://linux.die.net/man/8/mount) command.
+
+**3. PID 1 – init:** It starts [`/sbin/init`](https://en.wikipedia.org/wiki/Init) (most commonly [`systemd`](https://en.wikipedia.org/wiki/Systemd)), which then launches services, sets the [`runlevel`](https://en.wikipedia.org/wiki/Runlevel)/target, the login screen, the graphical environment, etc.
+
+### Network boot and booting from media
+
+**Optical media:** Boot follows the [El Torito](https://en.wikipedia.org/wiki/ISO_9660#El_Torito) standard; the MBR is not used.
+
+**Network boot:** The [Preboot Execution Environment – PXE](https://en.wikipedia.org/wiki/Preboot_Execution_Environment) fetches a boot image via TFTP/HTTP (often PXELINUX or iPXE).
+
+### Common bootloaders
+- [GNU GRand Unified Bootloader (GRUB)](https://en.wikipedia.org/wiki/GNU_GRUB) – a powerful open-source bootloader from the GNU project, supporting multiple operating systems and configurations.
+- [systemd-boot](https://en.wikipedia.org/wiki/Systemd-boot) – a simple UEFI boot manager (formerly gummiboot) included in `systemd`, enabling selection among installed systems and editing kernel parameters.
+- [rEFInd](https://en.wikipedia.org/wiki/REFInd) – a graphical boot manager for UEFI systems, designed for easy selection among multiple OSes; created as a successor to the discontinued rEFIt project.
+- [Limine](https://wiki.archlinux.org/title/Limine) – a modern, multi-platform bootloader with BIOS and UEFI support, developed as a reference implementation of the Limine boot protocol; supports booting Linux and chain-loading other bootloaders.
+- [SYSLINUX](https://wiki.syslinux.org/wiki/index.php?title=SYSLINUX) – a collection of lightweight bootloaders originally aimed at BIOS/MBR systems. Includes several specialized variants, e.g., [ISOLINUX](https://wiki.syslinux.org/wiki/index.php?title=ISOLINUX) for bootable CD/DVD media (ISO 9660), [PXELINUX](https://wiki.syslinux.org/wiki/index.php?title=PXELINUX) for PXE network boot, and [EXTLINUX/EFILINUX](https://wiki.syslinux.org/wiki/index.php?title=EXTLINUX) for booting from various filesystems (including UEFI support in the EFILINUX module).
+- [LILO](https://en.wikipedia.org/wiki/LILO_%28bootloader%29) – an older Linux bootloader for BIOS systems; historically the default in many distributions before the switch to GRUB (LILO development ended in 2015).
 
 ## Detailed instructions
 
@@ -94,15 +125,19 @@ In the `/etc/dhcp/dhcpd.conf` file, we set which network will be managed by the 
       next-server 10.0.0.1;
 	}
 
-Next, we enable routing in the `/etc/sysctl.conf` file.
+For the settings to take effect, restart the `isc-dhcp-server` DHCP server.
 
-    nano /etc/sysctl.conf
+    systemctl restart isc-dhcp-server.service
+
+Next, we enable routing by creating a file `/etc/sysctl.d/sysctl.conf` and enable packet routing.
+
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 To take into account the changes in Linux kernel parameters, use the `sysctl` command.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
 Then we set the IP network address translation. If we do not already have the `iptables` package installed, we install it with the package manager of the operating system.
 
@@ -110,13 +145,26 @@ Then we set the IP network address translation. If we do not already have the `i
 
     iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE
 
+	iptables -t nat -L -v
+
+	Chain PREROUTING (policy ACCEPT 2 packets, 1152 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain OUTPUT (policy ACCEPT 20 packets, 2816 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+
+	Chain POSTROUTING (policy ACCEPT 6 packets, 1122 bytes)
+ 	 pkts bytes target     prot opt in     out     source               destination         
+   	   14  1694 MASQUERADE  all  --  any    enp0s3  anywhere             anywhere   
+
 Let's make sure that the rules we enter in `iptables` are preserved by installing `iptables-persistent` and saving them.
 
     apt install iptables-persistent
 
-For the settings to take effect, restart the `isc-dhcp-server` DHCP server.
-
-    systemctl restart isc-dhcp-server.service
+	iptables-save > /etc/iptables/rules.v4
 
 ### 2. Task
 
@@ -146,6 +194,8 @@ If you cannot find the `tftpd` package with the package manager, then install th
     TFTP_DIRECTORY="/srv/tftp"
     TFTP_ADDRESS=":69"
     TFTP_OPTIONS="-v -c --secure"
+
+	systemctl restart tftpd-hpa.service
 
 ### 3. Task
 
