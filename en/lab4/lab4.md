@@ -168,21 +168,7 @@ Let's make sure that the rules we enter in `iptables` are preserved by installin
 
 ### 2. Task
 
-Let's install a TFTP server, for example `tftpd`.
-
-    apt install tftpd
-
-The installed `tftpd` server is already running with the default settings specified in the configuration file `/etc/inetd.conf`.
-
-    nano /etc/inetd.conf
-
-    tftp dgram udp wait nobody /usr/sbin/tcpd /usr/sbin/in.tftpd /srv/tftp
-
-Let's create a `/srv/tftp` folder, which TFTP will offer over the network.
-
-    mkdir /srv/tftp
-
-If you cannot find the `tftpd` package with the package manager, then install the `tftpd-hpa` package and add the `-v` flag and the `-c` flag in the `/etc/default/tftpd-hpa` configuration file to enable automatic availability of newly added files in the `/srv/tftp` and enable more verbose logging.
+Let's install a TFTP server, for example `tftpd-hpa` package and add the `-v` flag and the `-c` flag in the `/etc/default/tftpd-hpa` configuration file to enable automatic availability of newly added files in the `/srv/tftp` and enable more verbose logging.
 
     apt install tftpd-hpa
 
