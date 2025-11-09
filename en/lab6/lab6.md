@@ -50,15 +50,17 @@ For the settings to take effect, restart the `snmpd` SNMP server and test the op
 
     snmpwalk -v 1 -c community localhost
 
-In the configuration file `/etc/snmp/snmpd.conf` we also limit access to the SNMP server based on the IP addresses of the clients. In our case, we will enable access from all IP addresses.
+In the configuration file `/etc/snmp/snmpd.conf` we also limit access to the SNMP server based on the IP addresses of the clients. In our case, we will enable access from all IP addresses. For the settings to take effect, restart the `snmpd` SNMP server.
 
     nano /etc/snmp/snmpd.conf
 
     agentaddress 0.0.0.0,[::1]
 
-For the settings to take effect, restart the `snmpd` SNMP server and test the operation with the `snmpwalk` command from another virtual machine.
+	systemctl restart snmpd.service
 
-    systemctl restart snmpd.service
+Test the operation with the `snmpwalk` command from another virtual machine.
+
+    apt install snmp
 
     snmpwalk -v 1 -c community 10.0.0.1
 
@@ -68,8 +70,8 @@ The data is output in TLV format and we see that each data has its own hierarchi
 
     nano /etc/apt/sources.list
 
-    deb http://deb.debian.org/debian/ bookworm main non-free-firmware non-free contrib
-    deb-src http://deb.debian.org/debian/ bookworm main non-free contrib
+    deb http://deb.debian.org/debian/ trixie main non-free-firmware non-free contrib
+	deb-src http://deb.debian.org/debian/ trixie main non-free-firmware non-free contrib
 
     apt update
     apt install snmp-mibs-downloader

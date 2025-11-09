@@ -50,15 +50,17 @@ Da se nastavitve upoštevajo, ponovno zaženemo `snmpd` SNMP strežnik in presku
 
     snmpwalk -v 1 -c community localhost
 
-V nastavitveni datoteki `/etc/snmp/snmpd.conf` tudi omejimo dostop do SNMP strežnika na podlagi IP naslovov odjemalcev. V našem primeru bomo omogočilo dostop z vseh IP naslovov.
+V nastavitveni datoteki `/etc/snmp/snmpd.conf` tudi omejimo dostop do SNMP strežnika na podlagi IP naslovov odjemalcev. V našem primeru bomo omogočilo dostop z vseh IP naslovov. Da se nastavitve upoštevajo, ponovno zaženemo `snmpd` SNMP strežnik.
 
     nano /etc/snmp/snmpd.conf
 
     agentaddress 0.0.0.0,[::1]
 
-Da se nastavitve upoštevajo, ponovno zaženemo `snmpd` SNMP strežnik in preskusimo delovanje z ukazom `snmpwalk` z drugega navideznega računalnika.
+	systemctl restart snmpd.service
 
-    systemctl restart snmpd.service
+Preskusimo delovanje z ukazom `snmpwalk` z drugega navideznega računalnika.
+
+    apt install snmp
 
     snmpwalk -v 1 -c community 10.0.0.1
 
@@ -68,8 +70,8 @@ Podatki se izpišejo v formatu TLV in vidimo, da ima vsak podatek svoj hierarhi�
 
     nano /etc/apt/sources.list
 
-    deb http://deb.debian.org/debian/ bookworm main non-free-firmware non-free contrib
-    deb-src http://deb.debian.org/debian/ bookworm main non-free contrib
+    deb http://deb.debian.org/debian/ trixie main non-free-firmware non-free contrib
+	deb-src http://deb.debian.org/debian/ trixie main non-free-firmware non-free contrib
 
     apt update
     apt install snmp-mibs-downloader
