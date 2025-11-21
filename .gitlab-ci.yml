@@ -1,0 +1,20 @@
+image: python:3.12-slim
+
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  script:
+    # Install MkDocs and plugins
+    - pip install --no-cache-dir -r requirements.txt
+
+    # Build the site. We tell MkDocs to put output into "public/"
+    # because GitLab Pages expects that directory.
+    - mkdocs build -d public
+
+  artifacts:
+    paths:
+      - public
+  only:
+    - main    # or "master" or whatever your default branch is
