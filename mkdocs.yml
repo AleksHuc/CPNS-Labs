@@ -4,17 +4,14 @@ docs_dir: .   # use current folder as docs root (en/ and si/ live here)
 
 theme:
   name: material
-  language: sl  # just affects UI defaults; content language handled by plugin
 
 plugins:
   - search
   - i18n:
-      docs_structure: folder         # en/ and si/ folders
-      default_language: si           # Slovene as default at /cbsp/
+      docs_structure: folder
       languages:
-        si:
+        - locale: si
+	  default: true
           name: Slovenščina
-          build: true
-        en:
+        - locale: en
           name: English
-          build: true
