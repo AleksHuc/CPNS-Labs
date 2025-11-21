@@ -1,4 +1,4 @@
-# 13. Lab: Information management in the network
+# 13. Lab: Data management in the network
 
 ## Instructions
 
@@ -7,8 +7,7 @@
 2. Set up the web interface for managing the LDAP server.
 3. Add two users to the LDAP server via the web interface.
 4. Use the command line to query the LDAP server and list both users.
-5. Through the web interface, enable users to make the settings necessary for logging into the operating system.
-6. On the second virtual machine, use both users to log into the operating system.
+5. On the second virtual machine, use both users to log into the operating system.
 
 ## More information
 
@@ -122,279 +121,267 @@ Now run the command `ldapsearch` again and check if there is now an LDAP databas
 
 ### 2. Task
 
-Install any web interface for managing the LDAP server. For example [`FusionDirectory`](https://www.fusiondirectory.org/en/) which can be installed through our operating system's package manager. We also install the `apache2` web server, the `fusiondirectory-schema` data schema, and the user management plugin `fusiondirectory-plugin-posix`.
+Install any web interface for managing the LDAP server. For example [`LDAP Account Manager`](https://www.ldap-account-manager.org/lamcms/) which can be installed through our operating system's package manager. We also install the `apache2` web server, if we do not have it yet.
     
-    apt install apache2 fusiondirectory fusiondirectory-schema fusiondirectory-plugin-posix
+    apt install apache2 ldap-account-manager
 
-After successful installation, we continue the installation on the web address `http://localhost/fusiondirectory`. To start setting up the `FusionDirectory` program, we must run the echo command in the command line, which is displayed on the web page, and then press the `Next` button.
+After successful installation, we continue the installation on the web address `http://localhost/lam`. Click on the `LAM configuration` in the upper right corner.
 
-    echo -n gihvljjoonp3l1u8ti740jtbai > /var/cache/fusiondirectory/fusiondirectory.auth
+![Home screen of `LDAP Account Manager`.](images/lab13-lam1.png)
 
-![Initial window of `FusionDirectory' program settings.](images/lab13-fd1.png)
+First we click on the `Edit server profiles` link
 
-We choose the language we want to use during the setup, for example, we can leave it on the `Automatic` option and press the `Next` button.
+![Choice of further setup of `LDAP Account Manager`.](images/lab13-lam2.png)
 
-![Selecting the `FusionDirectory` installation language.](images/lab13-fd2.png)
+In order to be able to change the settings, we must enter the `Password` of the server profile `lam`, which is also `lam` by default.
 
-Then check whether all plugins and environment variables are installed and correctly set, and press the `Next` button.
+![Login windows for profile `lam`.](images/lab13-lam3.png)
 
-![Window for checking the required settings and plugins.](images/lab13-fd3.png)
+In the `lam` server profile settings, under the `General settings` tab, under the `Tool settings` section, in the `Tree suffix` field, enter the domain of our directory `dc=kpov,dc=fri,dc=uni-lj,dc=si`. Also, under the `General settings` tab, under the `Security settings` section, in the `List of valid users` field, enter the name of our administrator `cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si`, which we created it during the `slapd` LDAP server installation.
 
-Now we enter the address of our LDAP server and enter the administrator password that we created during the installation. The correctness of the data for accessing the LDAP server can be checked by pressing the `Repeat` button. If the link check process returns us warnings and errors, then we need to add the schemas that `FusionDirectory` needs. After successfully establishing a connection with the LDAP server, press the `Next` button.
+![Adding the domain suffix to `Tree suffix` and `List of valid users` fields.](images/lab13-lam4.png)
 
-    fusiondirectory-insert-schema
+Now, also in the `lam` server profile settings, under the tab `Account type` under the section `Users` in the `LDAP suffix` we change the user domain to `ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si`. Als, under the section `Groups` in the field `LDAP suffix` we change the groups domain to `ou=group,dc=kpov,dc=fri,dc=uni-lj,dc=si`. Now we click on the button `Save` to apply the changes.
 
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    executing 'ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/fusiondirectory/core-fd.ldif'
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    adding new entry "cn=core-fd,cn=schema,cn=config"
+![Adding the domain suffix to user and groups `LDAP suffix` fields.](images/lab13-lam5.png)
 
+We login to the web application `LDAP Account Manager` with the username `admin` and password that we setup during the `slapd` installation.
 
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    executing 'ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/fusiondirectory/core-fd-conf.ldif'
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    adding new entry "cn=core-fd-conf,cn=schema,cn=config"
+![Login to web application `LDAP Account Manager`.](images/lab13-lam6.png)
 
+When we first login to the web application, we get the warning that we are missing suffixes for the users and groups. We can create the mentioned suffixes by clicking on the button `Create`.
 
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    executing 'ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/fusiondirectory/ldapns.ldif'
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    adding new entry "cn=ldapns,cn=schema,cn=config"
-
-
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    executing 'ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/ldap/schema/fusiondirectory/template-fd.ldif'
-    SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    adding new entry "cn=template-fd,cn=schema,cn=config"
-
-![Window for setting the connection to LDAP server.](images/lab13-fd4.png)
-
-On the next page, check the settings of the `FusionDirectory` program. We leave all settings at their default values, but we can correct, for example, the time zone, and then press the `Next` button.
-
-![The `FusionDirectory` settings window.](images/lab13-fd5.png)
-
-Now let's set up PHP modules and plugins. The verification of the object classes and the root object failed, so we create them by pressing the `Migrate` button.
-
-![PHP module and plug-in settings window.](images/lab13-fd6.png)
-
-The window for creating new classes of objects and the root object and the proposed changes, which we implement by clicking the `Migrate` button.
-
-![Window for creating new object classes and root object.](images/lab13-fd7.png)
-
-We see that we do not have an admin user created, so we create it by pressing the `Create` button. Enter any password for the administrator user twice in the `Password` and `Password (repeat)` fields and create the user by pressing the `Apply` button.
-
-![Window for creating a new administrative user.](images/lab13-fd8.png)
-
-Also, we don't have any roles set and rolls for managing access. We add them by clicking the `Migrate` button. We have now eliminated all the missing requirements and run the entire test again by clicking the `Check again` button. When we have successfully finished setting up the PHP modules and plugins, click the `Next` button.
-
-![Successful setup of PHP modules and plugins.](images/lab13-fd9.png)
-
-In the next step, we transfer the created configuration file via the browser to the local disk by clicking on the `Download configuration` button. We move the downloaded configuration file to the `/etc/fusiondirectory` folder and set the `fusiondirectory` program to start using it. To complete the setting, press the `Next` button.
-
-    mv /home/aleks/Prejemi/fusiondirectory.conf /etc/fusiondirectory
-
-    fusiondirectory-setup --check-config
-
-    /etc/fusiondirectory/fusiondirectory.conf exists…
-    /etc/fusiondirectory/fusiondirectory.conf is not set properly, do you want to fix it ?:  [Yes/No]?
-    Yes
-
-![Download the setup file.](images/lab13-fd10.png)
-
-With the successful installation and setup of `FusionDirectory`, we can now access the application registration form at `http://localhost/fusiondirectory`. We log in with the default administrator `fd-admin` and the password we chose during installation.
-
-![FusionDirectory application registration form.](images/lab13-fd11.png)
+![Creating suffixes for users and groups.](images/lab13-lam7.png)
 
 ### 3. Task
 
-Now that we have successfully logged into the `FusionDirectory` application, we can create two new users in it. To add users, click on the `Users` icon or select `Users` from the side menu. Now, by clicking on the pull-down menu `Action` and then `Create` and `User`, we get to the form for creating users.
+We now create a new group by selecting the `Accounts` link at the top right and clicking on the `Groups` link.
 
-![Main page of `FusionDirectory` application.](images/lab13-fd12.png)
+![Link to groups.](images/lab13-lam8.png)
 
-![User management page and user creation form selection.](images/lab13-fd13.png)
+We create a new group by clicking in the button `New group`.
 
-In order to create a user, we select `First name`, `Surname`, `Username` and `Password`, which we confirm by re-entering it. By clicking on the `OK` button, the user is created. Using this procedure we create two users.
+![Adding of new group.](images/lab13-lam9.png)
 
-![Completed user creation form.](images/lab13-fd14.png)
+In the field `Group name` we name the new group, for example `kpovusers` and create it by clicking the `Save` button at the top left.
 
-![User management page.](images/lab13-fd15.png)
+![Adding of new group.](images/lab13-lam10.png)
+
+Now, lets create two new users, by selecting the `Accounts` link at the top right and clicking on the `Users` link.
+
+![Link to users.](images/lab13-lam11.png)
+
+We create a new user by clicking in the button `New user`.
+
+![Adding a new user.](images/lab13-lam12.png)
+
+Under the tab `Personal` in the field `First name` we fill in the name of our new user and in the field `Last name` the surname, for example `Janze Novak`.
+
+![Setting up the name and surname of the new user.](images/lab13-lam13.png)
+
+We also have to click on the `Unix` tab, so that the fields necessary for using the LDAP user as a local user of the Linux operating system, are automatically filed out.
+
+![`Unix` tab.](images/lab13-lam14.png)
+
+By clicking the `Set password` button at the top left, we open a window where we fill the fields `Password` and `Repeat password` with the password for the new user and save it by clicking the button `OK`.
+
+![Setting the password for the new user.](images/lab13-lam15.png)
+
+We complete the creation of the new user, by clicking on the button `Save` at the top left. We repeat the same steps for the second new user.
 
 ### 4. Task
 
 Locally, the LDAP database can be queried using the `ldapsearch` tool via the command line. 
 
-    ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=kpov,dc=fri,dc=uni-lj,dc=si "givenName=Janez"
+    ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=kpov,dc=fri,dc=uni-lj,dc=si "givenName=Janze"
 
     SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    # extended LDIF
-    #
-    # LDAPv3
-    # base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
-    # filter: givenName=Janez
-    # requesting: ALL
-    #
+	SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+	SASL SSF: 0
+	# extended LDIF
+	#
+	# LDAPv3
+	# base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
+	# filter: givenName=Janze
+	# requesting: ALL
+	#
+	
+	# Janze Novak, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Novak,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jnovak
+	uid: jnovak
+	cn: Janze Novak
+	uidNumber: 10000
+	gidNumber: 10000
+	sn: Novak
+	givenName: Janze
 
-    # janezg, people, kpov.fri.uni-lj.si
-    dn: uid=janezg,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Godec
-    sn: Godec
-    givenName: Janez
-    uid: janezg
+	# Janze Godec, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Godec,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jgodec
+	uid: jgodec
+	cn: Janze Godec
+	uidNumber: 10001
+	gidNumber: 10000
+	sn: Godec
+	givenName: Janze
 
-    # janezn, people, kpov.fri.uni-lj.si
-    dn: uid=janezn,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Novak
-    sn: Novak
-    givenName: Janez
-    uid: janezn
+	# search result
+	search: 2
+	result: 0 Success
 
-    # search result
-    search: 2
-    result: 0 Success
-
-    # numResponses: 3
-    # numEntries: 2
+	# numResponses: 3
+	# numEntries: 2
 
     ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=kpov,dc=fri,dc=uni-lj,dc=si "givenName=Ja*"
 
     SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    # extended LDIF
-    #
-    # LDAPv3
-    # base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
-    # filter: givenName=Janez
-    # requesting: ALL
-    #
+	SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+	SASL SSF: 0
+	# extended LDIF
+	#
+	# LDAPv3
+	# base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
+	# filter: givenName=Ja*
+	# requesting: ALL
+	#
+	
+	# Janze Novak, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Novak,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jnovak
+	uid: jnovak
+	cn: Janze Novak
+	uidNumber: 10000
+	gidNumber: 10000
+	sn: Novak
+	givenName: Janze
 
-    # janezg, people, kpov.fri.uni-lj.si
-    dn: uid=janezg,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Godec
-    sn: Godec
-    givenName: Janez
-    uid: janezg
+	# Janze Godec, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Godec,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jgodec
+	uid: jgodec
+	cn: Janze Godec
+	uidNumber: 10001
+	gidNumber: 10000
+	sn: Godec
+	givenName: Janze
 
-    # janezn, people, kpov.fri.uni-lj.si
-    dn: uid=janezn,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Novak
-    sn: Novak
-    givenName: Janez
-    uid: janezn
+	# search result
+	search: 2
+	result: 0 Success
 
-    # search result
-    search: 2
-    result: 0 Success
+	# numResponses: 3
+	# numEntries: 2
 
-    # numResponses: 3
-    # numEntries: 2
-
-    ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=kpov,dc=fri,dc=uni-lj,dc=si "(&(givenName=Ja*)(uid=janezn))"
+    ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=kpov,dc=fri,dc=uni-lj,dc=si "(&(givenName=Ja*)(uid=jnovak))"
 
     SASL/EXTERNAL authentication started
-    SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
-    SASL SSF: 0
-    # extended LDIF
-    #
-    # LDAPv3
-    # base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
-    # filter: (&(givenName=Ja*)(uid=janezn))
-    # requesting: ALL
-    #
+	SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+	SASL SSF: 0
+	# extended LDIF
+	#
+	# LDAPv3
+	# base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
+	# filter: (&(givenName=Ja*)(uid=jnovak))
+	# requesting: ALL
+	#
 
-    # janezn, people, kpov.fri.uni-lj.si
-    dn: uid=janezn,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Novak
-    sn: Novak
-    givenName: Janez
-    uid: janezn
+	# Janze Novak, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Novak,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jnovak
+	uid: jnovak
+	cn: Janze Novak
+	uidNumber: 10000
+	gidNumber: 10000
+	sn: Novak
+	givenName: Janze
 
-    # search result
-    search: 2
-    result: 0 Success
+	# search result
+	search: 2
+	result: 0 Success
 
-    # numResponses: 2
-    # numEntries: 1
+	# numResponses: 2
+	# numEntries: 1
 
 We can also query the LDAP database from another virtual computer with the `ldapsearch` tool, which is installed with the `ldap-utils` package via the package manager of our operating system.
 
-    ldapsearch -H ldap://SERVER_IP:389/ -D cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si -b dc=kpov,dc=fri,dc=uni-lj,dc=si "(&(givenName=Ja*)(uid=janezn))" -W
+    apt install ldap-utils
 
-    Enter LDAP Password: 
+    ldapsearch -H ldap://SERVER_IP:389/ -D cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si -b dc=kpov,dc=fri,dc=uni-lj,dc=si "(|(sn=G*)(uid=jnovak))" -W
+
     # extended LDIF
-    #
-    # LDAPv3
-    # base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
-    # filter: (&(givenName=Ja*)(uid=janezn))
-    # requesting: ALL
-    #
-
-    # janezn, people, kpov.fri.uni-lj.si
-    dn: uid=janezn,ou=people,dc=kpov,dc=fri,dc=uni-lj,dc=si
-    objectClass: inetOrgPerson
-    objectClass: organizationalPerson
-    objectClass: person
-    cn: Janez Novak
-    sn: Novak
-    givenName: Janez
-    uid: janezn
-    userPassword:: e1NTSEF9NEg0K2p6L3V2OVhlTVdkYVphOS9tNjNEdUNqdVIvLzQ=
-
-    # search result
-    search: 2
-    result: 0 Success
-
-    # numResponses: 2
-    # numEntries: 1
+	#
+	# LDAPv3
+	# base <dc=kpov,dc=fri,dc=uni-lj,dc=si> with scope subtree
+	# filter: (|(sn=G*)(uid=jnovak))
+	# requesting: ALL
+	#
+	
+	# Janze Novak, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Novak,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jnovak
+	uid: jnovak
+	cn: Janze Novak
+	uidNumber: 10000
+	gidNumber: 10000
+	userPassword:: e1NTSEF9VFY2V0FldE9QeGpkc05KL2Y3ZlBlSXlpQkVabFVHcHk=
+	sn: Novak
+	givenName: Janze
+	
+	# Janze Godec, People, kpov.fri.uni-lj.si
+	dn: cn=Janze Godec,ou=People,dc=kpov,dc=fri,dc=uni-lj,dc=si
+	objectClass: posixAccount
+	objectClass: inetOrgPerson
+	objectClass: organizationalPerson
+	objectClass: person
+	loginShell: /bin/bash
+	homeDirectory: /home/jgodec
+	userPassword:: e1NTSEF9cnFaQ3ZwRTg1a05TTDZsSVlpTjQ3Y0VISU50V1Z6Ukk=
+	uid: jgodec
+	cn: Janze Godec
+	uidNumber: 10001
+	gidNumber: 10000
+	sn: Godec
+	givenName: Janze
+	
+	# search result
+	search: 2
+	result: 0 Success
+	
+	# numResponses: 3
+	# numEntries: 2
 
 ### 5. Task
-
-In the `FusionDirectory` on the `Users` page, click on an individual user and select the `Unix` tab, where we enable log into Unix operating systems by clicking on the `Add Unix settings` button.
-
-![Unix settings tab.](images/lab13-fd16.png)
-
-In the tab, specify the `Home Folder` and change the `Executing Shell` to `/bin/bash`. To confirm the changes, click on the `Confirm` button.
-
-![Unix settings tab.](images/lab13-fd17.png)
-
-We do the same for the other user. On the `Users` page, there is now a penguin (Tux) icon next to users who are enabled to log into Unix operating systems.
-
-![User page.](images/lab13-fd18.png)
-
-### 6. Task
 
 On another virtual computer, we install the `libpam-ldapd` package, which takes care of user authentication (Pluggable Authentication Module - PAM) and `libnss-ldapd`, which takes care of the mapping between LDAP and operating system users (Name Service Switch - NSS).
 
@@ -418,11 +405,15 @@ Let's check if the LDAP users are already reachable as local users of the operat
 
     aleks:x:1000:1000:Aleks,,,:/home/aleks:/bin/bash
 
-    getent passwd janezn
-    
-    getent passwd janezg
+    getent passwd jnovak
 
-We can see that LDAP users are not yet reachable as local users of the operating system, so we reconfigure the `nslcd` package (NSLCD - LDAP Connection Daemon), which is a local service for resolving LDAP names or users. Where we again enter the IP address of our first virtual computer on which the LDAP server is running and press the `OK` button.
+	jnovak:*:10000:10000:Janze Novak:/home/jnovak:/bin/bash
+    
+    getent passwd jgodec
+
+	jgodec:*:10001:10000:Janze Godec:/home/jgodec:/bin/bash
+
+If by chance we do not see LDAP users as local users of the operating system, then we reconfigure the `nslcd` package (NSLCD - LDAP Connection Daemon), which is a local service for resolving LDAP names or users. Where we again enter the IP address of our first virtual computer on which the LDAP server is running and press the `OK` button.
 
      dpkg-reconfigure nslcd
 
@@ -451,11 +442,13 @@ Now we restart `nslcd` and `nscd` (NSCD - Name Service Cache Daemon), which perf
     service nslcd restart
     service nscd restart
 
-    getent passwd janezg
-    janezg:x:1101:1101:Janez Godec:/home/janezg:/bin/bash
+    getent passwd jnovak
 
-    getent passwd janezn
-    janezn:x:1102:1102:Janez Novak:/home/janezn:/bin/bash
+	jnovak:*:10000:10000:Janze Novak:/home/jnovak:/bin/bash
+    
+    getent passwd jgodec
+
+	jgodec:*:10001:10000:Janze Godec:/home/jgodec:/bin/bash
 
 Now enable authentication by running the `pam-auth-update` command and choosing to enable `Unix authentication`, `LDAP authentication`, `Register user sessions in the systemd control group...`, `Create home directory on login` and `GNOME  Keyring Deamon - Login keyring management` and press the `OK` button.
 
@@ -469,18 +462,18 @@ Now let's login with the LDAP user to our local operating system to test the ope
 
     aleks
 
-    su - janezg
+    su - jnovak
 
-    Creating directory '/home/janezg'.
-
-    ls /home
-
-    aleks janezg
-
-    su - janezn
-
-    Creating directory '/home/janezn'.
+    Creating directory '/home/jnovak'.
 
     ls /home
 
-    aleks janezg janezn
+    aleks jnovak
+
+    su - jgodec
+
+    Creating directory '/home/jgodec'.
+
+    ls /home
+
+    aleks jnovak jgodec

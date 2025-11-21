@@ -1,151 +1,230 @@
-# 3. Lab: Operation of simple programs over the network
-
+# 3. Lab: Data transfer over the network
 ## Instructions
 
-0. Use the network and virtual machines from 2. lab.
-1. Install a Trivial File Transfer Protocol (TFTP) server and find out how it works (`tftpd`)?
-2. Find out what `inetd` is and how it works?
-3. Implement a simple Hypertext Transfer Protocol (HTTP) server running through `inetd`.
+0. Use the network and virtual machines from 2. Lab.
+1. Install Wireshark and capture and inspect the packets from the following tasks.
+2. Install a Trivial File Transport Protocol (TFTP) server and use it to transfer the file to another virtual machine.
+3. Install a Hypertext Transfer Protocol (HTTP) server and use it to transfer the file to another virtual machine.
+4. Compare the file transfer speed between TFTP and HTTP protocols.
 
 ## Additional information
 
-The command [`ls`](https://linux.die.net/man/1/ls) allows us to print the contents of the folders in the file system.
+The [`usermod`](https://linux.die.net/man/8/usermod) command allows us to change the user account properties.
 
-The [`mkdir`](https://linux.die.net/man/1/mkdir) command is used to create new folders in the file system.
+The [`dpkg`](https://www.man7.org/linux/man-pages/man1/dpkg.1.html) command allows us to manage packages of the Debian operating system.
 
-The [`touch`](https://linux.die.net/man/1/touch) command allows us to create files and change file timestamps.
+The [`systemctl`](https://www.man7.org/linux/man-pages/man1/systemctl.1.html) command allows us to manage the systemd system and operating system services.
 
-The [`echo`](https://linux.die.net/man/1/echo) command is used to output lines of text to standard output.
+The command [`wget`](https://www.man7.org/linux/man-pages/man1/wget.1.html) is a tool for downloading files over the network using the HTTP, HTTPS and FTP protocols.
 
-The command [`awk`](https://linux.die.net/man/1/awk) allows us to find and process text patterns from strings.
+The [`netstat`](https://linux.die.net/man/8/netstat) command is a tool to display a computer's network properties and services.
 
-The command [`wc`](https://linux.die.net/man/1/wc) allows us to count newlines, words and bytes in individual text files.
-
-The [`chmod`](https://linux.die.net/man/1/chmod) command is used to change how users, groups, and others are allowed to access files.
-
-The command [`curl`](https://linux.die.net/man/1/curl) allows us to transfer data from the server to the local computer via a bunch of supported protocols.
-
+The [`cp`](https://www.man7.org/linux/man-pages/man1/cp.1.html) command copies files and directories from source to destination.
+ 
 ## Detailed instructions
 
-### 1. Task
+### 1. Instalation of Wireshark
+Now let's install the network packet capture program [Wireshark](https://www.wireshark.org/) through our operating system's packet manager.
 
-We install the TFTP server via the package manager of the installed Linux distribution on the first virtual computer with a DHCP server. [TFTP](https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol) is a simple protocol for transferring files over a network to remote computers, the specification of which can be found in [RFC 1350](https://www.rfc-editor. org/rfc/rfc1350). For example, let's install the `tftpd` implementation of the TFTP protocol (there are also `tftpd-hpa`, `atftpd` ...).
+	apt install wireshark
 
-    apt install tftpd
+During the installation, the following choice appears:
 
-The installed `tftpd` server is already running with the default settings specified in the configuration file `/etc/inetd.conf`. For example, with the following line:
+	Dumpcap can be installed in a way that allows members of the "wireshark" system group to capture packets. This is recommended over the alternative of running Wireshark/Tshark directly as root, because less of the code will run with elevated privileges.
 
-    tftp dgram udp wait nobody /usr/sbin/tcpd /usr/sbin/in.tftpd /srv/tftp
+	For more detailed information please see /usr/share/doc/wireshark-common/README.Debian.gz once the package is installed.
 
-We can see that `tftpd` needs `inetd` to run. At the moment, the last parameter is important for us, which points to the `/srv/tftp` folder, which we check to see if it exists, and we see that it doesn't.
+	Enabling this feature may be a security risk, so it is disabled by default. If in doubt, it is suggested to leave it disabled. 
 
-    ls /srv/tftp
-    
-    ls: cannot access '/srv/tftp': No such file or directory
+	Should non-superusers be able to capture packets?                                     
 
-In case you cannot find the `tftpd` package with the package manager, then install the `tftpd-hpa` package and follow the instruction from here.
+	<Yes>                                           <No>
 
-The mentioned folder serves to store files that the TFTP server will be able to transfer over the network, so we create it and save any file in it.
+Where we select the `Yes` option, and then add our user to the `wireshark` group to give him access to capture NIC traffic with the [`usermod`](https://linux.die.net/man/8/usermod).
 
-    mkdir /srv/tftp
-    touch test.txt
+	usermod -a -G wireshark YOUR_USERNAME
 
-Now let's test the operation of the TFTP server by installing the TFTP client `tftp` on another virtual machine and downloading the test file.
+In case you selected `No`, you can recall the configuration with the [`dpkg-reconfigure`](https://www.man7.org/linux/man-pages/man1/dpkg.1.html) command.
 
-    apt install tftp
+	sudo dpkg-reconfigure wireshark-common
 
-    tftp
-    connect IP_DHCP_SERVER
-    get FILE_NAME
-    quit
+Now we restart the virtual machine and run Wireshark to monitor the traffic on the `enp0s8` NIC.
 
-### 2. Task
+### 2. Instalation of TFTP server
 
-When installing `tftpd`, we found that the package [`openbsd-inetd`](https://man.openbsd.org/inetd) was also installed, which is one of the many implementations of `inetd` (there are also `xinetd` , `rinetd`, `rlinetd`, `inetutils-inetd` ...). We also found that `tftpd` works through `inetd` and we also configure it through the `/etc/inetd.conf` configuration file.
+On the server, we install the desired `TFTP` server implementation, for example `tftpd-hpa` via the package manager of our operating system.
 
-So, `inetd` is a program that runs in the background of the operating system (service, daemon), which listens on the configured network ports and enables connections to them. When a network device establishes a connection to a configured port, `inetd` runs the program specified for that port and forwards all received data to the program's standard input. When the running program finishes executing, `inetd` passes the data from the program's standard output through the network port back to the original network device that established the connection. `inetd` allows us to run programs over the network, without the program itself taking care of it.
+	apt install tftpd-hpa
 
-The individual programs that `inetd` runs, are set in the `/etc/inetd.conf` file with the following parameters:
+We check the `TFTP` server settings in the configuration file `/etc/default/tftpd-hpa`, where we set the folder that the server offers over the network.
 
-| Service name or port | Socket type | Protocol | wait/nowait | User   | Program path   | Program arguments            |
-|----------------------|-------------|----------|-------------|--------|----------------|------------------------------|
-| tftp                 | dgram       | udp      | wait        | nobody | /usr/sbin/tcpd | /usr/sbin/in.tftpd /srv/tftp |
+	nano /etc/default/tftpd-hpa
 
-### 3. Task
+	# /etc/default/tftpd-hpa
 
-Let's write a simple HTTP server that simply returns the requested HyperText Markup Language ([HTML](https://en.wikipedia.org/wiki/HTML)) file on `GET` request.
+	TFTP_USERNAME="tftp"
+	TFTP_DIRECTORY="/srv/tftp"
+	TFTP_ADDRESS=":69"
+	TFTP_OPTIONS="--secure"
 
-    nano server.sh
+We check the operation of the server with the command [`systemctl`](https://www.man7.org/linux/man-pages/man1/systemctl.1.html):
 
-    #!/bin/bash
+	systemctl status tftpd-hpa.service 
 
-    read request
+Create an arbitrary file in the `/srv/tftp` folder, for example:
 
-    file=$( echo $request | awk '$1 == "GET" { print $2 }' )
+	nano /srv/tftp/test.txt
 
-    echo "HTTP/1.1 200 OK"
-    echo "Content-Length: $(wc -c < $1$file)"
-    echo ""
-    cat $1$file
+	This is a test file.
 
-Let's check the execution rights of our HTTP server and enable them.
+On the client, we now install the `TFTP` client through the package manager of our operating system, in order to check the operation of the `TFTP` protocol by downloading the created file.
 
-    ls -ls
+	apt install tftp-hpa
 
-    4 -rw-r--r-- 1 aleks aleks  185 Oct 24 11:55 server.sh
+	tftp 
+	(to) 10.0.1.1
+	tftp> get test.txt
+	tftp> quit
 
-    chmod u+x server.sh
+	cat test.txt
 
-Let's create an HTML file that our HTTP server will return.
+### 3. Instalation of HTTP server
 
-    nano index.html
+We install the desired HTTP server implementation on the server, for example `lighttpd' via the package manager of our operating system.
 
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>KPOV</title>
-        </head>
-        <body>
-            <h1>3. Labs</h1>
-            <p>It works!</p>
-        </body>
-    </html>
+	apt install lighttpd
 
-Let's test the operation of the HTTP server locally.
+We check the `HTTP` settings of the server in the configuration file `/etc/lighttpd/lighttpd.conf`, where we set the folder that the server offers over the network.
 
-    ./server.sh /home/aleks
+	nano /etc/lighttpd/lighttpd.conf
 
-    GET /home/aleks/index.html HTTP/1.1
+	server.modules = (
+        "mod_indexfile",
+        "mod_access",
+        "mod_alias",
+        "mod_redirect",
+	)
 
-    HTTP/1.1 200 OK
-    Content-Length: 142
+	server.document-root        = "/var/www/html"
+	server.upload-dirs          = ( "/var/cache/lighttpd/uploads" )
+	server.errorlog             = "/var/log/lighttpd/error.log"
+	server.pid-file             = "/run/lighttpd.pid"
+	server.username             = "www-data"
+	server.groupname            = "www-data"
+	server.port                 = 80
 
-    <!DOCTYPE html>
-    <html>
-        <head>
-            <title>KPOV</title>
-        </head>
-        <body>
-            <h1>3. Labs</h1>
-            <p>It works!</p>
-        </body>
-    </html>
+	# features
+	#https://redmine.lighttpd.net/projects/lighttpd/wiki/Server_feature-flagsDetails
+	server.feature-flags       += ("server.h2proto" => "enable")
+	server.feature-flags       += ("server.h2c"     => "enable")
+	server.feature-flags       += ("server.graceful-shutdown-timeout" => 5)
+	#server.feature-flags       += ("server.graceful-restart-bg" => "enable")
 
+	# strict parsing and normalization of URL for consistency and security
+	# https://redmine.lighttpd.net/projects/lighttpd/wiki/Server_http-parseoptsDetails
+	# (might need to explicitly set "url-path-2f-decode" = "disable"
+	#  if a specific application is encoding URLs inside url-path)
+	server.http-parseopts = (
+  		"header-strict"           => "enable",# default
+  		"host-strict"             => "enable",# default
+  		"host-normalize"          => "enable",# default
+  		"url-normalize-unreserved"=> "enable",# recommended highly
+  		"url-normalize-required"  => "enable",# recommended
+  		"url-ctrls-reject"        => "enable",# recommended
+  		"url-path-2f-decode"      => "enable",# recommended highly (unless breaks app)
+ 	   #"url-path-2f-reject"      => "enable",
+  		"url-path-dotseg-remove"  => "enable",# recommended highly (unless breaks app)
+ 	   #"url-path-dotseg-reject"  => "enable",
+ 	   #"url-query-20-plus"       => "enable",# consistency in query string
+	)
 
-If we don't already have an `inetd` package installed, we install it with a package manager.
+	index-file.names            = ( "index.php", "index.html" )
+	url.access-deny             = ( "~", ".inc" )
+	static-file.exclude-extensions = ( ".php", ".pl", ".fcgi" )
 
-    apt install openbsd-inetd
+	# default listening port for IPv6 falls back to the IPv4 port
+	include_shell "/usr/share/lighttpd/use-ipv6.pl " + server.port
+	include_shell "/usr/share/lighttpd/create-mime.conf.pl"
+	include "/etc/lighttpd/conf-enabled/*.conf"
 
-Now add our HTTP server to the configuration file `/etc/inetd.conf` and then restart the `inetd` service. For the name of the service, select `http` or the port `80` can also be used. We choose `stream` for the socket type because we will be using Transmission Control Protocol ([TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol)), which means we choose `tcp` for the protocol. We set the server so that it is always available and does not wait for the program it ran to finish using the `nowait` setting. Then we select a user that has the permissions to run our simple HTTP server, for example `aleks`. The next parameter is the absolute path to our program, which is `/home/aleks/server.sh` and the arguments that are given when starting the program. The first argument is, by convention, the very name of the `server.sh` program. The second argument points to the folder where our `index.html` is located, which is `/home/aleks`.
+	#server.compat-module-load   = "disable"
+	server.modules += (
+    	    "mod_dirlisting",
+    	    "mod_staticfile",
+	)
 
-    nano /etc/inetd.conf
+Create an arbitrary file in the `/var/www/html` folder, for example:
 
-    http stream tcp	nowait aleks /home/aleks/server.sh server.sh /home/aleks
+	nano /var/www/html/test.txt
 
-    systemctl restart inetd.service
+	This is a test file.
 
-We test the operation over the network with the program for sending HTTP requests from the command console `curl` on the second virtual machine.
+On the client, we now use the command [`wget`](https://www.man7.org/linux/man-pages/man1/wget.1.html) to check the operation of the `HTTP` protocol by downloading the created file.
 
-    apt install curl
+	wget http://10.0.1.1/test.txt
 
-    curl 10.0.1.1/index.html --verbose
+	--2024-10-18 15:53:56--  http://10.0.1.1/test.txt
+	Connecting to 10.0.1.1:80... connected.
+	HTTP request sent, awaiting response... 200 OK
+	Length: 12 [text/plain]
+	Saving to: ‘test.txt’
+
+	test.txt            100%[===================>]      12  --.-KB/s    in 0s      
+
+	2024-10-18 15:53:56 (2.30 MB/s) - ‘test.txt’ saved [12/12]
+
+	cat test.txt
+
+### 4. HTTP and TFTP file transfer speed testing
+
+We can check which services are currently running on our server and which ports they are listening on with the [`netstat`](https://linux.die.net/man/8/netstat) tool.
+
+	apt install net-tools
+
+	netstat -ntulp
+
+	Active Internet connections (only servers)
+	Proto Recv-Q Send-Q Local Address           Foreign A	ddress         State       PID/Program name    
+	tcp        0      0 127.0.0.1:631           0.0.0.0:*               LISTEN      678/cupsd           
+	tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      3144/lighttpd       
+	tcp6       0      0 ::1:631                 :::*                    LISTEN      678/cupsd           
+	tcp6       0      0 :::80                   :::*                    LISTEN      3144/lighttpd       
+	udp        0      0 0.0.0.0:35725           0.0.0.0:*                           629/avahi-daemon: r 
+	udp        0      0 0.0.0.0:5353            0.0.0.0:*                           629/avahi-daemon: r 
+	udp        0      0 0.0.0.0:67              0.0.0.0:*                           707/dhcpd           
+	udp        0      0 0.0.0.0:68              0.0.0.0:*                           563/dhclient        
+	udp        0      0 0.0.0.0:69              0.0.0.0:*                           2741/in.tftpd       
+	udp6       0      0 :::5353                 :::*                                629/avahi-daemon: r 
+	udp6       0      0 :::42225                :::*                                629/avahi-daemon: r 
+	udp6       0      0 :::69                   :::*                                2741/in.tftpd       
+
+Now we download any large file from the web to our server, for example the installation image of the operating system [Mint](https://linuxmint.com/download.php) and copy it to `/srv/tftp` and `/var/www /html`.
+
+	cp /home/aleks/Downloads/linuxmint-22-cinnamon-64bit.iso /srv/tftp/Mint.iso
+	cp /home/aleks/Downloads/linuxmint-22-cinnamon-64bit.iso /var/www/html/Mint.iso
+
+On the server, we now use the `wget` command to download the mentioned file via the `HTTP` protocol.
+
+	wget http://10.0.1.1/Mint.iso
+
+	--2024-10-18 16:19:32--  http://10.0.1.1/Mint.iso
+	Connecting to 10.0.1.1:80... connected.
+	HTTP request sent, awaiting response... 200 OK
+	Length: 2907832320 (2.7G) [application/x-iso9660-image]
+	Saving to: ‘Mint.iso’
+
+	Mint.iso            100%[===================>]   2.71G   201MB/s    in 14s     
+
+	2024-10-18 16:19:47 (194 MB/s) - ‘Mint.iso’ saved [2907832320/2907832320]
+
+Now let's transfer the same file with the `tftp` command via the `TFTP` protocol.
+
+	tftp
+
+	(to) 10.0.1.1
+	tftp> verbose     
+	Verbose mode on.
+	tftp> get Mint.iso
+	getting from 10.0.1.1:Mint.iso to Mint.iso [netascii]
+	Received 2930509229 bytes in 853.7 seconds [27462515 bit/s]
+	tftp> quit
