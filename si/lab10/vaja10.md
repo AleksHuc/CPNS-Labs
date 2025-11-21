@@ -1,4 +1,4 @@
-# 10. Vaja: Postavite navidezno zasebno omrežje z uporabo certifikatov
+# 10. Vaja: Postavitev navideznega zasebnega omrežja z uporabo certifikatov
 
 ## Navodila
  

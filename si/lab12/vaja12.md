@@ -1,4 +1,4 @@
-# 12. Vaja: Upravljanje omrežij z protokolom RADIUS
+# 12. Vaja: Upravljanje omrežij s protokolom RADIUS
 
 ## Navodila
 

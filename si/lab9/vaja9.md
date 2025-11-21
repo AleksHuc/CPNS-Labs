@@ -1,4 +1,4 @@
-# 9. Vaja: Postavite navidezno zasebno omrežje z uporabo deljene skrivnosti
+# 9. Vaja: Postavitev navideznega zasebnega omrežja z uporabo deljene skrivnosti
 
 ## Navodila
 

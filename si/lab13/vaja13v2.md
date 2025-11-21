@@ -1,4 +1,4 @@
-# 13. Vaja: Upravljanje z informacijami v omrežju
+# 13. Vaja: Upravljanje s podatki v omrežju
 
 ## Navodila
 

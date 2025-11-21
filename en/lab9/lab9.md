@@ -1,4 +1,4 @@
-# 9. Lab: Set up a virtual private network using a shared secret
+# 9. Lab: Set up of a virtual private network using a shared secret
 
 ## Instructions
  

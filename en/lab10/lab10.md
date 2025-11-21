@@ -1,4 +1,4 @@
-# 10. Lab: Set up a virtual private network using certificates
+# 10. Lab: Set up of a virtual private network using certificates
 
 ## Instructions
  

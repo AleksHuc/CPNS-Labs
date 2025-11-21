@@ -1,4 +1,4 @@
-# 13. Lab: Information management in the network
+# 13. Lab: Data management in the network
 
 ## Instructions
 
