@@ -1,6 +1,6 @@
 site_name: CBSP Labs
 site_url: https://polaris.fri.uni-lj.si/cbsp/
-docs_dir: .   # use current folder as docs root (en/ and si/ live here)
+docs_dir: .
 
 theme:
   name: material
@@ -11,7 +11,7 @@ plugins:
       docs_structure: folder
       languages:
         - locale: si
-	  default: true
+          default: true
           name: Slovenščina
         - locale: en
           name: English
