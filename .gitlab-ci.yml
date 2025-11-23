@@ -1,10 +1,11 @@
 image: python:3.12-slim
 
 stages:
+  - build
   - deploy
 
 pages:
-  stage: deploy
+  stage: build
   script:
     - pip install --no-cache-dir -r requirements.txt
     - mkdocs build -d public
