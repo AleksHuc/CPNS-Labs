@@ -9,14 +9,22 @@ plugins:
   - search
   - i18n:
       docs_structure: folder
+      reconfigure_material: false
       languages:
         - locale: si
           default: true
           name: Slovenščina
-          link: /cpns/ 
         - locale: en
           name: English
-          link: /cpns/en/
+
+extra:
+  alternate:
+    - name: Slovenščina
+      link: /cpns/
+      lang: si
+    - name: English
+      link: /cpns/en/
+      lang: en
 
 nav:
   - Home: index.md
