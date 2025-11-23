@@ -13,10 +13,10 @@ plugins:
         - locale: si
           default: true
           name: Slovenščina
-          link: ./ 
+          link: /cpns/ 
         - locale: en
           name: English
-          link: ./en/
+          link: /cpns/en/
 
 nav:
   - Home: index.md
