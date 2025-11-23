@@ -13,9 +13,10 @@ plugins:
         - locale: si
           default: true
           name: Slovenščina
+          link: ./ 
         - locale: en
           name: English
-
+          link: ./en/
 
 nav:
   - Home: index.md
