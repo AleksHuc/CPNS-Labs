@@ -10,7 +10,7 @@ plugins:
   - i18n:
       docs_structure: folder
       languages:
-        - locale: si
+        - locale: sl
           default: true
           name: Slovenščina
         - locale: en
