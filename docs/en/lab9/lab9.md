@@ -51,26 +51,26 @@ On the second virtual machine, we use the `scp` command to securely transfer the
 
     scp aleks@10.0.0.1:/home/aleks/vpn_simple/key.key /home/aleks/vpn_simple/key.key
 
-On the first virtual computer, we create a configuration file for the OpenVPN server, which will work via the UDP protocol and create a tunnel on the 3rd layer of the network, i.e. `tun` mode. In the configuration file, set the protocol through which the VPN will work `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the server and the client `ifconfig 10.35.1.1 10.35.1.2` and the encryption key `secret key.key`.
+On the first virtual computer, we create a configuration file for the OpenVPN server, which will work via the UDP protocol and create a tunnel on the 3rd layer of the network, i.e. `tun` mode. In the configuration file, set the protocol through which the VPN will work `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the server and the client `ifconfig 10.35.1.1 10.35.1.2` and the encryption key `secret key.key` and cipher type  `cipher AES-256-CBC`. 
 
     nano server_tun.conf
 
-    proto udp
-    dev tun
-    ifconfig 10.35.1.1 10.35.1.2
-    secret key.key
-    providers legacy default
+    proto udp4
+	dev tun
+	ifconfig 10.35.1.1 10.35.1.2
+	secret key.key
+	cipher AES-256-CBC
 
-On another virtual computer, we create a configuration file for the OpenVPN client, which will work via the UDP protocol and a tunnel on the 3rd layer of the network, i.e. in `tun` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the client and server `ifconfig 10.35.1.2 10.35.1.1` and the encryption key `secret key.key`.
+On another virtual computer, we create a configuration file for the OpenVPN client, which will work via the UDP protocol and a tunnel on the 3rd layer of the network, i.e. in `tun` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto udp`, the layer on which the tunnel will be executed `dev tun`, the VPN IP address of the client and server `ifconfig 10.35.1.2 10.35.1.1` and the encryption key `secret key.key` and cipher type  `cipher AES-256-CBC`.
 
     nano client_tun.conf
 
-    remote 10.0.0.1
-    proto udp
-    dev tun
-    ifconfig 10.35.1.2 10.35.1.1
-    secret key.key
-    providers legacy default
+	remote 10.0.0.1
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.2 10.35.1.1
+	secret key.key
+	cipher AES-256-CBC
 
 First, we start the OpenVPN server on the first virtual computer.
 
@@ -84,24 +84,24 @@ Then we run the OpenVPN client on another virtual computer and check connectivit
 
 ### 2. Task
 
-Let's create an OpenVPN server that will work via the TCP protocol and create a tunnel on the 2nd layer of the network, i.e. `tap` mode. In the settings file, we set the protocol through which the VPN `proto tcp-server` will work, the layer on which the `dev tap` tunnel will be executed and the encryption key `secret key.key`.
+Let's create an OpenVPN server that will work via the TCP protocol and create a tunnel on the 2nd layer of the network, i.e. `tap` mode. In the settings file, we set the protocol through which the VPN `proto tcp-server` will work, the layer on which the `dev tap` tunnel will be executed and the encryption key `secret key.key` and cipher type  `cipher AES-256-CBC`.
 
     nano server_tap.conf
 
-    proto tcp-server
+    proto tcp4-server
     dev tap
     secret key.key
-    providers legacy default
+    cipher AES-256-CBC
 
-On another virtual computer, create a configuration file for the OpenVPN client, which will work via the TCP protocol and a tunnel on the 2nd layer of the network, i.e. in `tap` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto tcp-client`, the layer on which the tunnel will be executed `dev tap` and the encryption key `secret key.key' `.
+On another virtual computer, create a configuration file for the OpenVPN client, which will work via the TCP protocol and a tunnel on the 2nd layer of the network, i.e. in `tap` mode. In the configuration file, set the outside IP address of the OpenVPN server `remote 10.0.0.1`, the protocol through which it will access the VPN `proto tcp-client`, the layer on which the tunnel will be executed `dev tap` and the encryption key `secret key.key` and cipher type  `cipher AES-256-CBC`.
 
     nano client_tap.conf
 
     remote 10.0.0.1
-    proto tcp-client
+    proto tcp4-client
     dev tap
     secret key.key
-    providers legacy default
+    cipher AES-256-CBC
 
 First, we start the OpenVPN server on the first virtual computer. Since the tunnel is on the 2nd layer of the network, we still need to manually add the IP address to our server using the `ip` command.
 
@@ -124,3 +124,59 @@ Then we run the OpenVPN client on another virtual computer and manually add the 
 And then we also test the operation from the first virtual computer.
 
     ping 10.35.1.2
+
+### 3. Task
+
+Now lets create OpenVPN using a modern substitute for shared encryption key using self signed certificate fingerprints. On server we first create the server certificate with private and public key pair and read its fingerprint.
+
+	openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj "/CN=openvpn-server"
+
+	openssl x509 -fingerprint -sha256 -noout -in server.crt
+
+	sha256 Fingerprint=72:4A:87:DA:AF:E4:A9:5A:88:B0:C3:38:4E:5B:37:AD:E3:CC:A4:A6:73:54:09:F0:E7:D4:04:AA:D0:59:5B:72
+
+Now we do the same on the client.
+
+	openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout client.key -out client.crt -nodes -sha256 -days 3650 -subj "/CN=openvpn-client"
+
+	openssl x509 -fingerprint -sha256 -noout -in client.crt
+
+	sha256 Fingerprint=2B:15:CF:CB:A4:6A:6F:F7:D4:B6:F9:6A:6D:8E:98:73:B6:8C:B2:BD:42:AA:13:BC:82:3F:F5:A5:E6:73:55:E2
+
+On the server we create a new config file that uses the clients fingerprint and run it.
+
+	nano server_tun_tls.conf
+
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.1 10.35.1.2
+	tls-server
+	dh none
+	cert server.crt
+	key  server.key
+	data-ciphers AES-256-GCM
+	peer-fingerprint 2B:15:CF:CB:A4:6A:6F:F7:D4:B6:F9:6A:6D:8E:98:73:B6:8C:B2:BD:42:AA:13:BC:82:3F:F5:A5:E6:73:55:E2
+
+	openvpn server_tun_tls.conf
+
+On the client we create a new config file that uses the servers fingerprint and run it.
+
+	nano client_tun_tls.conf
+
+	remote 10.0.1.1
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.2 10.35.1.1
+	tls-client
+	cert client.crt
+	key  client.key
+	data-ciphers AES-256-GCM
+	peer-fingerprint 72:4A:87:DA:AF:E4:A9:5A:88:B0:C3:38:4E:5B:37:AD:E3:CC:A4:A6:73:54:09:F0:E7:D4:04:AA:D0:59:5B:72
+
+	openvpn client_tun_tls.conf
+	
+And then we also test the connection from the client.
+
+    ping 10.35.1.1
+
+	

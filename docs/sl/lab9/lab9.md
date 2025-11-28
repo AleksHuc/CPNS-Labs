@@ -51,26 +51,26 @@ Na drugem navideznem računalniku uporabimo ukaz `scp`, da varno prenesemo klju�
 
     scp aleks@10.0.0.1:/home/aleks/vpn_simple/key.key /home/aleks/vpn_simple/key.key
 
-Na prvem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN strežnik, ki bo deloval preko protokola UDP in ustvaril tunel na 3. plasti omrežja, torej način `tun`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto udp`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov strežnika in klienta `ifconfig 10.35.1.1 10.35.1.2` ter ključ za šifriranje `secret key.key`.
+Na prvem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN strežnik, ki bo deloval preko protokola UDP in ustvaril tunel na 3. plasti omrežja, torej način `tun`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto udp4`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov strežnika in klienta `ifconfig 10.35.1.1 10.35.1.2` ter ključ za šifriranje `secret key.key`  in način šifriranja `cipher AES-256-CBC`.
 
     nano server_tun.conf
 
-    proto udp
-    dev tun
-    ifconfig 10.35.1.1 10.35.1.2
-    secret key.key
-    providers legacy default
+    proto udp4
+	dev tun
+	ifconfig 10.35.1.1 10.35.1.2
+	secret key.key
+	cipher AES-256-CBC
 
-Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola UDP in tunela na 3. plasti omrežja, torej v načinu `tun`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto udp`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov klienta in strežnika `ifconfig 10.35.1.2 10.35.1.1` ter ključ za šifriranje `secret key.key`.
+Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola UDP in tunela na 3. plasti omrežja, torej v načinu `tun`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto udp4`, plast na kateri se bo izvedel tunel `dev tun`, VPN IP naslov klienta in strežnika `ifconfig 10.35.1.2 10.35.1.1` ter ključ za šifriranje `secret key.key` in način šifriranja `cipher AES-256-CBC`.
 
     nano client_tun.conf
 
-    remote 10.0.0.1
-    proto udp
-    dev tun
-    ifconfig 10.35.1.2 10.35.1.1
-    secret key.key
-    providers legacy default
+	remote 10.0.0.1
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.2 10.35.1.1
+	secret key.key
+	cipher AES-256-CBC
     
 Najprej poženemo OpenVPN strežnik an prvem navideznem računalniku.
 
@@ -84,24 +84,24 @@ Nato pa poženemo OpenVPN klienta na drugem navideznem računalniku in preverimo
 
 ### 2. Naloga
 
-Ustvarimo OpenVPN strežnik, ki bo deloval preko protokola TCP in ustvaril tunel na 2. plasti omrežja, torej način `tap`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto tcp-server`, plast na kateri se bo izvedel tunel `dev tap` ter ključ za šifriranje `secret key.key`.
+Ustvarimo OpenVPN strežnik, ki bo deloval preko protokola TCP in ustvaril tunel na 2. plasti omrežja, torej način `tap`. V nastavitveni datoteki nastavimo protokol preko katerega bo deloval VPN `proto tcp4-server`, plast na kateri se bo izvedel tunel `dev tap` ter ključ za šifriranje `secret key.key` in način šifriranja `cipher AES-256-CBC`.
 
     nano server_tap.conf
 
-    proto tcp-server
+    proto tcp4-server
     dev tap
     secret key.key
-    providers legacy default
+    cipher AES-256-CBC
 
-Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola TCP in tunela na 2. plasti omrežja, torej v načinu `tap`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto tcp-client`, plast na kateri se bo izvedel tunel `dev tap` ter ključ za šifriranje `secret key.key`.
+Na drugem navideznem računalniku ustvarimo nastavitveno datoteko za OpenVPN klient, ki bo deloval preko protokola TCP in tunela na 2. plasti omrežja, torej v načinu `tap`. V nastavitveni datoteki nastavimo zunanji IP naslov OpenVPN strežnika `remote 10.0.0.1`, protokol preko katerega bo dostopal do VPN `proto tcp4-client`, plast na kateri se bo izvedel tunel `dev tap` ter ključ za šifriranje `secret key.key` in način šifriranja `cipher AES-256-CBC`.
 
     nano client_tap.conf
 
     remote 10.0.0.1
-    proto tcp-client
+    proto tcp4-client
     dev tap
     secret key.key
-    providers legacy default
+    cipher AES-256-CBC
 
 Najprej poženemo OpenVPN strežnik an prvem navideznem računalniku. Ker je tunel na 2. plasti omrežja, moramo še ročno dodati IP naslov našemu strežniku z ukazom `ip`.
 
@@ -124,3 +124,58 @@ Nato pa poženemo OpenVPN klienta na drugem navideznem računalniku in ročno do
 In nato preizkusimo delovanje še s prvega navideznega računalnika.
 
     ping 10.35.1.2
+
+### 3. Naloga
+
+Zdaj pa ustvarimo OpenVPN z uporabo sodobnega nadomestka za deljeni šifrirni ključ z uporabo samopodpisanih prstnih odtisov potrdil. Na strežniku najprej ustvarimo strežniško potrdilo s parom zasebnega in javnega ključa ter preberemo njegov prstni odtis.
+
+	openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj "/CN=openvpn-server"
+
+	openssl x509 -fingerprint -sha256 -noout -in server.crt
+
+	sha256 Fingerprint=72:4A:87:DA:AF:E4:A9:5A:88:B0:C3:38:4E:5B:37:AD:E3:CC:A4:A6:73:54:09:F0:E7:D4:04:AA:D0:59:5B:72
+
+Zdaj naredimo enako na odjemalcu.
+
+	openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout client.key -out client.crt -nodes -sha256 -days 3650 -subj "/CN=openvpn-client"
+
+	openssl x509 -fingerprint -sha256 -noout -in client.crt
+
+	sha256 Fingerprint=2B:15:CF:CB:A4:6A:6F:F7:D4:B6:F9:6A:6D:8E:98:73:B6:8C:B2:BD:42:AA:13:BC:82:3F:F5:A5:E6:73:55:E2
+
+Na strežniku ustvarimo novo konfiguracijsko datoteko, ki uporablja prstni odtis odjemalca, in jo zaženemo.
+
+	nano server_tun_tls.conf
+
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.1 10.35.1.2
+	tls-server
+	dh none
+	cert server.crt
+	key  server.key
+	data-ciphers AES-256-GCM
+	peer-fingerprint 2B:15:CF:CB:A4:6A:6F:F7:D4:B6:F9:6A:6D:8E:98:73:B6:8C:B2:BD:42:AA:13:BC:82:3F:F5:A5:E6:73:55:E2
+
+	openvpn server_tun_tls.conf
+
+Na odjemalcu ustvarimo novo konfiguracijsko datoteko, ki uporablja prstni odtis strežnika, in jo zaženemo.
+
+	nano client_tun_tls.conf
+
+	remote 10.0.1.1
+	proto udp4
+	dev tun
+	ifconfig 10.35.1.2 10.35.1.1
+	tls-client
+	cert client.crt
+	key  client.key
+	data-ciphers AES-256-GCM
+	peer-fingerprint 72:4A:87:DA:AF:E4:A9:5A:88:B0:C3:38:4E:5B:37:AD:E3:CC:A4:A6:73:54:09:F0:E7:D4:04:AA:D0:59:5B:72
+
+	openvpn client_tun_tls.conf
+	
+In nato preizkusimo tudi povezavo s strani odjemalca.
+
+    ping 10.35.1.1
+
