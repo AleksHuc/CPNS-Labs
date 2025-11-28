@@ -3,8 +3,9 @@
 ## Instructions
  
 0. Use the network and virtual machines from the previous labs.
-1. Set up and test OpenVPN operation between server and client in TUN mode with a shared secret over UDP.
-2. Set up and test the operation of OpenVPN between the server and the client also via TAP mode with a shared secret over TCP
+1. Set up and test OpenVPN tunnel operation between server and client in TUN mode with a shared secret over UDP.
+2. Set up and test the operation of OpenVPN tunnel between the server and the client also via TAP mode with a shared secret over TCP.
+3. Set up and test OpenVPN tunnel operation between server and client in TUN mode with certificate fingerprints over UDP.
 
 ## Additional information
 
@@ -127,7 +128,7 @@ And then we also test the operation from the first virtual computer.
 
 ### 3. Task
 
-Now lets create OpenVPN using a modern substitute for shared encryption key using self signed certificate fingerprints. On server we first create the server certificate with private and public key pair and read its fingerprint.
+Now lets create OpenVPN tunnel using a modern substitute for shared encryption key using self signed certificate fingerprints. On server we first create the server certificate with private and public key pair and read its fingerprint.
 
 	openssl req -x509 -newkey ec:<(openssl ecparam -name secp384r1) -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj "/CN=openvpn-server"
 

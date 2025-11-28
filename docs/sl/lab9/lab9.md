@@ -2,9 +2,10 @@
 
 ## Navodila
 
-0. Uporabite omrežje in navidezne računalnike iz prejšnjih vaj.
-1. Nastavite in preizkusite delovanje OpenVPN med strežnikom in klientom v načinu TUN z deljeno skrivnostjo preko protokola UDP.
-2. Nastavite in preizkusite delovanje OpenVPN med strežnikom in klientom tudi preko načina TAP z deljeno skrivnostjo preko protokola TCP.
+0. Uporabite omrežje in virtualne stroje iz prejšnjih vaj.
+1. Nastavite in preizkusite delovanje tunela OpenVPN med strežnikom in odjemalcem v načinu TUN z deljeno skrivnostjo prek UDP.
+2. Nastavite in preizkusite delovanje tunela OpenVPN med strežnikom in odjemalcem tudi prek načina TAP z deljeno skrivnostjo prek TCP.
+3. Nastavite in preizkusite delovanje tunela OpenVPN med strežnikom in odjemalcem v načinu TUN s prstnimi odtisi potrdil prek UDP.
 
 ## Dodatne informacije
 
