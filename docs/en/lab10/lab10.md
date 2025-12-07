@@ -120,9 +120,8 @@ The certification agency now prepares a private and public key or certificate fo
 
     ./easyrsa build-client-full caclient
 
-Now we continue on the server where we create a folder for signed certificates and move the signed certificate into it from the home folder. We also move the certificate authority's public key into our keys folder.
+Now we continue on the server where we move the signed certificate into a folder for signed certificates from the home folder. We also move the certificate authority's public key into our keys folder.
 
-    mkdir pki/issued
     mv /home/aleks/server.crt pki/issued/
     mv /home/aleks/ca.crt pki/
 
@@ -131,24 +130,26 @@ We move to the parent folder and create a configuration file for the OpenVPN ser
     cd ..
     nano server.conf
 
-    proto tcp
-    server 10.8.0.0 255.255.255.0
-    dev tun
-    topology subnet
-    client-to-client
+	proto tcp4-server
+	server 10.8.0.0 255.255.255.0
+	dev tun
+	topology subnet
+	client-to-client
 
-    ca server/pki/ca.crt
-    cert server/pki/issued/server.crt
-    key server/pki/private/server.key
-    dh server/pki/dh.pem
+	ca server/pki/ca.crt
+	cert server/pki/issued/server.crt
+	key server/pki/private/server.key
+	dh server/pki/dh.pem
+
+	cipher AES-256-GCM
+	keepalive 10 120
 
 Now let's start the OpenVPN server and test the operation.
 
     openvpn server.conf
 
-We continue on the client where we create a folder for signed certificates and move the signed certificate into it from the home folder. We also move the certificate authority's public key into our keys folder.
+Now we continue on the client where we move the signed certificate into a folder for signed certificates from the home folder. We also move the certificate authority's public key into our keys folder.
 
-    mkdir pki/issued
     mv /home/aleks/client.crt pki/issued/
     mv /home/aleks/ca.crt pki/
 
@@ -157,7 +158,7 @@ We move to the parent folder and create a configuration file for the OpenVPN cli
     cd ..
     nano client.conf
 
-    proto tcp
+    proto tcp4-client
     client
     dev tun
     remote SERVER_IP
@@ -165,6 +166,8 @@ We move to the parent folder and create a configuration file for the OpenVPN cli
     ca client/pki/ca.crt
     cert client/pki/issued/client.crt
     key client/pki/private/client.key
+
+	cipher AES-256-GCM
 
 Now let's run the OpenVPN client and test the operation.
 
@@ -175,7 +178,7 @@ We continue with the certification agency, which already has all the certificate
     cd ..
     nano caclient.conf
 
-    proto tcp
+    proto tcp4-client
     client
     dev tun
     remote SERVER_IP
@@ -183,6 +186,8 @@ We continue with the certification agency, which already has all the certificate
     ca ca/pki/ca.crt
     cert ca/pki/issued/caclient.crt
     key ca/pki/private/caclient.key
+
+	cipher AES-256-GCM
     
 Now let's run the OpenVPN client and test the operation.
 

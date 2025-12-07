@@ -120,9 +120,8 @@ Certifikatna agencija si sedaj pripravi še privatni in javni ključ oz. certifi
 
     ./easyrsa build-client-full caclient
 
-Sedaj nadaljujemo na strežniku kjer ustvarimo mapo za podpisane certifikate in vanj iz domače mape premaknemo podpisan certifikat. Prav tako premaknemo javni ključ certifikatne agencije v našo mapo s ključi.
+Sedaj nadaljujemo na strežniku kjer iz domače mape premaknemo podpisan certifikat v mapo za izdane certifikate. Prav tako premaknemo javni ključ certifikatne agencije v našo mapo s ključi.
 
-    mkdir pki/issued
     mv /home/aleks/server.crt pki/issued/
     mv /home/aleks/ca.crt pki/
 
@@ -131,24 +130,26 @@ Premaknemo se v nadrejeno mapo ter ustvarimo nastavitveno datoteko za OpenVPN st
     cd ..
     nano server.conf
 
-    proto tcp
-    server 10.8.0.0 255.255.255.0
-    dev tun
-    topology subnet
-    client-to-client
+	proto tcp4-server
+	server 10.8.0.0 255.255.255.0
+	dev tun
+	topology subnet
+	client-to-client
 
-    ca server/pki/ca.crt
-    cert server/pki/issued/server.crt
-    key server/pki/private/server.key
-    dh server/pki/dh.pem
+	ca server/pki/ca.crt
+	cert server/pki/issued/server.crt
+	key server/pki/private/server.key
+	dh server/pki/dh.pem
+
+	cipher AES-256-GCM
+	keepalive 10 120
 
 Sedaj še poženemo strežnik OpenVPN in preizkusimo delovanje.
 
     openvpn server.conf
 
-Nadaljujemo na klientu kjer ustvarimo mapo za podpisane certifikate in vanj iz domače mape premaknemo podpisan certifikat. Prav tako premaknemo javni ključ certifikatne agencije v našo mapo s ključi.
+Sedaj nadaljujemo na klientu kjer iz domače mape premaknemo podpisan certifikat v mapo za izdane certifikate. Prav tako premaknemo javni ključ certifikatne agencije v našo mapo s ključi.
 
-    mkdir pki/issued
     mv /home/aleks/client.crt pki/issued/
     mv /home/aleks/ca.crt pki/
 
@@ -157,7 +158,7 @@ Premaknemo se v nadrejeno mapo ter ustvarimo nastavitveno datoteko za OpenVPN kl
     cd ..
     nano client.conf
 
-    proto tcp
+    proto tcp4-client
     client
     dev tun
     remote SERVER_IP
@@ -165,6 +166,8 @@ Premaknemo se v nadrejeno mapo ter ustvarimo nastavitveno datoteko za OpenVPN kl
     ca client/pki/ca.crt
     cert client/pki/issued/client.crt
     key client/pki/private/client.key
+	
+	cipher AES-256-GCM
 
 Sedaj še poženemo klienta OpenVPN in preizkusimo delovanje.
 
@@ -175,7 +178,7 @@ Nadaljujemo še na certifikatni agenciji, ki ima vse certifikate že v pravih ma
     cd ..
     nano caclient.conf
 
-    proto tcp
+    proto tcp4-client
     client
     dev tun
     remote SERVER_IP
@@ -183,6 +186,8 @@ Nadaljujemo še na certifikatni agenciji, ki ima vse certifikate že v pravih ma
     ca ca/pki/ca.crt
     cert ca/pki/issued/caclient.crt
     key ca/pki/private/caclient.key
+
+	cipher AES-256-GCM
 
 Sedaj še poženemo klienta OpenVPN in preizkusimo delovanje.
 
