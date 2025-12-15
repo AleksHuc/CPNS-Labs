@@ -24,6 +24,7 @@ If we used `iptables` until now, then we delete all the rules.
 
     iptables -t nat -L
     iptables -t nat -F
+	iptables-save > /etc/iptables/rules.v4
 
 The current `nftables` rules can be checked with the `nft` command. [Manual](https://www.netfilter.org/projects/nftables/manpage.html) for using `nft`.
 
@@ -40,15 +41,15 @@ On the first virtual machine, enable the gateway by creating a new `table`, a ne
     nft 'add chain mytable postroutingchain { type nat hook postrouting priority -100; }'
     nft add rule mytable postroutingchain masquerade
 
-We also need to enable routing on the first virtual machine in the `/etc/sysctl.conf` file.
+We also need to enable routing on the first virtual machine in the `/etc/sysctl.d/sysctl.conf` file.
 
-    nano /etc/sysctl.conf
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 To take into account the changes in Linux kernel parameters, use the `sysctl` command.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
 ### 2. Task
 
@@ -78,7 +79,7 @@ On the first virtual machine, add a stateful rule to filter all packets with the
 
 	mv output.dat /var/www/html/
 
-Now we add rules for storing the transferred amount of data and enable packet dropping when the selected limit is exceeded.
+Now we add rules for storing the transferred amount of data and enable packet dropping when the selected limit is exceeded. This rule can be achieved by using a counter that counts the number of packets and bytes transferred and a quota in bytes (`bytes`, `kbytes`, `mbytes`) that represents the threshold for triggering (`over` and `until`).
 
 	nft add table filter
 	nft add counter filter http-traffic

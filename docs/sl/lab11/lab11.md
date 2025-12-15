@@ -24,6 +24,7 @@
 
     iptables -t nat -L
     iptables -t nat -F
+	iptables-save > /etc/iptables/rules.v4
 
 Trenutne nastavitve `nftables` lahko preverimo z ukazom `nft`. [Navodila](https://www.netfilter.org/projects/nftables/manpage.html) za uporabo `nft`.
 
@@ -40,15 +41,15 @@ Na prvem navideznem računalniku omogočimo delovanje prehoda, tako da ustvarimo
     nft 'add chain mytable postroutingchain { type nat hook postrouting priority -100; }'
     nft add rule mytable postroutingchain masquerade
 
-Prav tako moramo omogočiti usmerjanje na prvem navideznem računalnik v datoteki `/etc/sysctl.conf`.
+Prav tako moramo omogočiti usmerjanje na prvem navideznem računalnik v datoteki `/etc/sysctl.d/sysctl.conf`.
 
-    nano /etc/sysctl.conf
+    nano /etc/sysctl.d/sysctl.conf
 
     net.ipv4.ip_forward=1
 
 Da se sprememba parametrov jedra Linux-a upošteva, uporabimo ukaz `sysctl`.
 
-    sysctl -p
+    sysctl -p /etc/sysctl.d/sysctl.conf
 
 ### 2. Naloga
 
@@ -78,7 +79,7 @@ Na prvem navideznem računalniku dodamo stanjsko pravilo za filtriranje vseh pak
 
 	mv output.dat /var/www/html/
 
-Sedaj dodamo pravila za hranjenje prenesene količine podatkov in vklopimo izpuščanje paketkov, ko presežemo izbrano mejo.	
+Sedaj dodamo pravila za hranjenje prenesene količine podatkov in vklopimo izpuščanje paketkov, ko presežemo izbrano mejo. To lahko dosežemo z uporabo števca, ki šteje število prenešenih paketov in bajtov ter kvote v bajtih (`bytes`, `kbytes`, `mbytes`), ki predstavlja mejo za sprožitev pravila (`over` in `until`).	
 	
 	nft add table filter
 	nft add counter filter http-traffic
