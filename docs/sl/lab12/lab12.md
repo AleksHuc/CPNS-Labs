@@ -25,12 +25,13 @@ Na prvem navideznem računalniku namestimo `freeradius` implementacijo RADIUS pr
 
     apt install freeradius
 
-V nastavitveni datoteki `clients.conf` programa `freeradius` nastavimo geslo za lokalni dostop do podatkov RADIUS strežnika.
+V nastavitveni datoteki `clients.conf` programa `freeradius` nastavimo IP našega lokalnega omrežja in geslo za lokalni dostop do podatkov RADIUS strežnika.
 
     nano /etc/freeradius/3.0/clients.conf
 
     client localhost {
-        secret = password1s	
+		ipaddr = 10.0.2.0/24        
+		secret = password1s	
     }
 
 V nastavitveni datoteki `users` programa `freeradius` ustvarimo novega uporabnika.
@@ -71,7 +72,6 @@ Sedaj ugotovimo na katerih omrežnih vrata posluša RADIUS strežnik, tako da na
     udp6       0      0 :::1813                 :::*                                1140/freeradius     
     udp6       0      0 ::1:161                 :::*                                797/snmpd           
     udp6       0      0 :::35744                :::*                                556/avahi-daemon: r 
-
 
 Ugotovimo, da RADIUS strežnik posluša na omrežnih vratih `1812` in sedaj preizkusimo delovanje RADIUS strežnika lokalno, tako da poženemo ukaz `radtest`.
 
@@ -124,6 +124,7 @@ V mapi sedaj ustvarimo novo mapo `radius` v mapi `/var/www/html` in v njej ustva
     nano /var/www/html/radius/index.html
 
     service apache2 restart
+	service freeradius restart
 
 Delovanje ovirjanja preizkusimo, tako da z brskalnikom poskusimo dostopati do naslova `http://localhost/radius`, kjer moramo biti pozvani za vnos uporabniškega imena in gesla. Ob vnosu uporabniškega imena in gesla RADIUS uporabnika, ki smo ga ustvarili v prejšnjem koraku, nam je dostop do strani omogočen, drugače pa nam je dostop zavrnjen.
 

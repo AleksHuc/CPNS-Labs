@@ -25,12 +25,13 @@ On the first virtual computer, we install the `freeradius` implementation of the
 
     apt install freeradius
 
-In the configuration file `clients.conf` of the `freeradius` program, we set the password for local access to the RADIUS server data.
+In the configuration file `clients.conf` of the `freeradius` program, we set the IP address of our local network and password for local access to the RADIUS server data.
 
     nano /etc/freeradius/3.0/clients.conf
 
     client localhost {
-        secret = password1s	
+		ipaddr = 10.0.2.0/24        
+		secret = password1s	
     }
 
 Create a new user in the `users` configuration file of the `freeradius` program.
@@ -123,6 +124,7 @@ Now create a new `radius` folder in the folder `/var/www/html` and create any HT
     nano /var/www/html/radius/index.html
 
     service apache2 restart
+	service freeradius restart
 
 We test the operation of blocking by using a browser to try to access the address `http://localhost/radius`, where we must be asked to enter a username and password. When entering the username and password of the RADIUS user that we created in the previous step, we are granted access to the page, otherwise access is denied.
 
