@@ -137,7 +137,7 @@ Da lahko spreminjamo nastavitve moramo vpisati `Geslo` strežniškega profila `l
 
 ![Okno za vnos gesla strežniškega profila `lam`.](slike/vaja13-lam3.png)
 
-V nastavitvah strežniškega profila `lam` pod zavihkom `Splošne nastavitve` pod poglavjem `Nastavitve orodij` v polje `Drevesna pripona` vnesemo domeno našega imenika `dc=kpov,dc=fri,dc=uni-lj,dc=si`. Prav tako pod zavihkom `Splošne nastavitve` pod poglavjem `Varnostne nastavitve` v polje `Seznam veljavnih uporabnikov` vnesemo ime našega administratorja `cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si`, ki smo ga ustvarili med namestitvijo LDAP strežnika `slapd`.
+V nastavitvah strežniškega profila `lam` pod zavihkom `Splošne nastavitve` pod poglavjem `Nastavitve orodij` v polje `Drevesna pripona` vnesemo domeno našega imenika `dc=kpov,dc=fri,dc=uni-lj,dc=si`. Prav tako pod zavihkom `Splošne nastavitve` pod poglavjem `Strežniške nastavitve` v polje `Seznam veljavnih uporabnikov` vnesemo ime našega administratorja `cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si`, ki smo ga ustvarili med namestitvijo LDAP strežnika `slapd`.
 
 ![Dodajanje naše domene v `Drevesno pripono` in `Seznam veljavnih uporabnikov`](slike/vaja13-lam4.png)
 
@@ -179,7 +179,7 @@ Pod zavihkom `Osebno` vnesem v polje `Ime` ime uporabnika in v polje `Priimek` p
 
 ![Vnesemo ime in priimek novega uporabnika.](slike/vaja13-lam13.png)
 
-Klikniti moramo še na zavihek `Unix`, da se nam avtomatsko izpolnijo potrebna polja, ki nam omogočajo uporabo LDAP uporabnika, kot uporabnika operacijskega sistema Linux.
+Klikniti moramo še na zavihek `Unix`, da se nam avtomatsko izpolnijo potrebna polja, ki nam omogočajo uporabo LDAP uporabnika, kot uporabnika operacijskega sistema Linux. Za `Primarno skupino` uporabnika izberemo skupino `kpovuporabniki` polje `UID število` pustimo prazno.
 
 ![Zavihek `Unix.](slike/vaja13-lam14.png)
 

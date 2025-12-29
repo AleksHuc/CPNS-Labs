@@ -137,7 +137,7 @@ In order to be able to change the settings, we must enter the `Password` of the 
 
 ![Login windows for profile `lam`.](images/lab13-lam3.png)
 
-In the `lam` server profile settings, under the `General settings` tab, under the `Tool settings` section, in the `Tree suffix` field, enter the domain of our directory `dc=kpov,dc=fri,dc=uni-lj,dc=si`. Also, under the `General settings` tab, under the `Security settings` section, in the `List of valid users` field, enter the name of our administrator `cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si`, which we created it during the `slapd` LDAP server installation.
+In the `lam` server profile settings, under the `General settings` tab, under the `Tool settings` section, in the `Tree suffix` field, enter the domain of our directory `dc=kpov,dc=fri,dc=uni-lj,dc=si`. Also, under the `General settings` tab, under the `Server settings` section, in the `List of valid users` field, enter the name of our administrator `cn=admin,dc=kpov,dc=fri,dc=uni-lj,dc=si`, which we created it during the `slapd` LDAP server installation.
 
 ![Adding the domain suffix to `Tree suffix` and `List of valid users` fields.](images/lab13-lam4.png)
 
@@ -179,7 +179,7 @@ Under the tab `Personal` in the field `First name` we fill in the name of our ne
 
 ![Setting up the name and surname of the new user.](images/lab13-lam13.png)
 
-We also have to click on the `Unix` tab, so that the fields necessary for using the LDAP user as a local user of the Linux operating system, are automatically filed out.
+We also have to click on the `Unix` tab, so that the fields necessary for using the LDAP user as a local user of the Linux operating system, are automatically filed out. We select `kpovuporabniki` for the `Primary group` and leave `UID number` empty.
 
 ![`Unix` tab.](images/lab13-lam14.png)
 
