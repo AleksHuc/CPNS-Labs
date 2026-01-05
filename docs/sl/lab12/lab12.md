@@ -25,12 +25,11 @@ Na prvem navideznem računalniku namestimo `freeradius` implementacijo RADIUS pr
 
     apt install freeradius
 
-V nastavitveni datoteki `clients.conf` programa `freeradius` nastavimo IP našega lokalnega omrežja in geslo za lokalni dostop do podatkov RADIUS strežnika.
+V nastavitveni datoteki `clients.conf` programa `freeradius` nastavimo geslo za lokalni dostop do podatkov RADIUS strežnika.
 
     nano /etc/freeradius/3.0/clients.conf
 
-    client localhost {
-		ipaddr = 10.0.2.0/24        
+    client localhost { 
 		secret = password1s	
     }
 

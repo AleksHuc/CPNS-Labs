@@ -25,12 +25,11 @@ On the first virtual computer, we install the `freeradius` implementation of the
 
     apt install freeradius
 
-In the configuration file `clients.conf` of the `freeradius` program, we set the IP address of our local network and password for local access to the RADIUS server data.
+In the configuration file `clients.conf` of the `freeradius` program, we set the password for local access to the RADIUS server data.
 
     nano /etc/freeradius/3.0/clients.conf
 
     client localhost {
-		ipaddr = 10.0.2.0/24        
 		secret = password1s	
     }
 
